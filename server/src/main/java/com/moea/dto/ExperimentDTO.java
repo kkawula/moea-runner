@@ -1,4 +1,4 @@
 package com.moea.dto;
 
-public class ExperimentDTO {
+public record ExperimentDTO(int evaluations) {
 }

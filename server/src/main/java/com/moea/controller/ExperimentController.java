@@ -1,38 +1,43 @@
 package com.moea.controller;
 
-import com.moea.ExperimentStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moea.dto.ExperimentDTO;
+import com.moea.model.Experiment;
+import com.moea.model.ExperimentMetricResult;
 import com.moea.service.ExperimentService;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "experiments")
 public class ExperimentController {
     private final ExperimentService experimentService;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public ExperimentController(ExperimentService experimentService) {
         this.experimentService = experimentService;
     }
 
     @GetMapping
-    public String getExperiments() {
-        return "Hello experiments";
+    public List<Experiment> getExperiments() {
+        return experimentService.getExperiments();
     }
 
     @GetMapping("/{id}")
-    public String getExperimentResults(int id) {
-        return "<RESULT>";
+    public List<ExperimentMetricResult> getExperimentResults(int id) {
+        return experimentService.getExperimentResults(id);
     }
 
     @GetMapping("/{id}/status")
     public String getExperimentStatus(int id) {
-        return ExperimentStatus.RUNNING.toString();
+        return experimentService.getExperimentStatus(id).name();
     }
 
     @PostMapping()
-    public int createExperiment(@RequestBody String experimentRequest) {
-        //TODO: Parse experimentRequest with mapper
-        ExperimentDTO experiment = new ExperimentDTO(1000);
-        return experimentService.createAndRunExperiment(experiment);
+    public Long createExperiment(@RequestBody String experimentRequest) throws IOException {
+        ExperimentDTO experimentDto = mapper.readValue(experimentRequest, ExperimentDTO.class);
+        return experimentService.createAndRunExperiment(experimentDto);
     }
 }

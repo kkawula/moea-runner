@@ -1,3 +1,5 @@
+Database.mv.db
+Database.trace.db
 .gradle
 gradlew
 gradlew.bat

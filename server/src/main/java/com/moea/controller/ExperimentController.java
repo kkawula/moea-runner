@@ -14,10 +14,11 @@ import java.util.List;
 @RequestMapping(path = "experiments")
 public class ExperimentController {
     private final ExperimentService experimentService;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
 
-    public ExperimentController(ExperimentService experimentService) {
+    public ExperimentController(ExperimentService experimentService, ObjectMapper mapper) {
         this.experimentService = experimentService;
+        this.mapper = mapper;
     }
 
     @GetMapping

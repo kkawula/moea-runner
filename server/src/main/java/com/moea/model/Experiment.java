@@ -1,30 +1,46 @@
 package com.moea.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
+@Setter
+@Getter
+@Builder
+@ToString
+@Table(name = "experiments")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Experiment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
+    @Column(name = "evaluations")
     private int evaluations;
 
-    public Experiment() {}
+    @OneToMany(
+            mappedBy = "experiment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Algorithm> algorithms = new ArrayList<>();
 
-    public Experiment(int evaluations) {
-        this.evaluations = evaluations;
-    }
+    @OneToMany(
+            mappedBy = "experiment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Problem> problems = new ArrayList<>();
 
-    public int getId() {
-        return id;
-    }
+    @OneToMany(
+            mappedBy = "experiment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<ExperimentMetricResult> experimentMetricResults = new ArrayList<>();
 
-    public int getEvaluations() {
-        return evaluations;
-    }
 }

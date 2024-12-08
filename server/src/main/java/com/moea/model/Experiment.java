@@ -1,5 +1,6 @@
 package com.moea.model;
 
+import com.moea.ExperimentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +23,10 @@ public class Experiment {
     @Column(name = "evaluations")
     private int evaluations;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private ExperimentStatus status;
+
     @OneToMany(
             mappedBy = "experiment",
             cascade = CascadeType.ALL,
@@ -42,5 +47,4 @@ public class Experiment {
             orphanRemoval = true
     )
     private List<ExperimentMetricResult> experimentMetricResults = new ArrayList<>();
-
 }

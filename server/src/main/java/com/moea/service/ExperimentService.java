@@ -8,9 +8,12 @@ import com.moea.model.ExperimentMetricResult;
 import com.moea.model.Problem;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import jakarta.transaction.Transactional;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
+import org.moeaframework.analysis.collector.Observations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,27 +28,29 @@ public class ExperimentService {
         this.experimentResultsRepository = experimentResultsRepository;
     }
 
-    public Long createAndRunExperiment(Long ExperimentId) {
+    public Observable<Observations> createAndRunExperiment(Long ExperimentId) {
         Experiment experiment = experimentRepository.findById(ExperimentId).orElseThrow();
 
-        for (Problem problem : experiment.getProblems()) {
-            Instrumenter instrumenter;
-            for (Algorithm algorithm : experiment.getAlgorithms()) {
-                instrumenter = new Instrumenter()
-                        .withProblem(problem.getProblemName())
-                        .attachAllMetricCollectors();
+        return Observable.<Observations>create(observer -> {
+            for (Problem problem : experiment.getProblems()) {
+                Instrumenter instrumenter;
+                for (Algorithm algorithm : experiment.getAlgorithms()) {
+                    instrumenter = new Instrumenter()
+                            .withProblem(problem.getProblemName())
+                            .attachAllMetricCollectors();
 
-                new Executor()
-                        .withProblem(problem.getProblemName())
-                        .withAlgorithm(algorithm.getAlgorithmName())
-                        .withMaxEvaluations(experiment.getEvaluations())
-                        .withInstrumenter(instrumenter)
-                        .run();
+                    new Executor()
+                            .withProblem(problem.getProblemName())
+                            .withAlgorithm(algorithm.getAlgorithmName())
+                            .withMaxEvaluations(experiment.getEvaluations())
+                            .withInstrumenter(instrumenter)
+                            .run();
 
-                System.out.println("Experiment " + ExperimentId + " finished for problem " + problem.getProblemName() + " and algorithm " + algorithm.getAlgorithmName());
-                instrumenter.getObservations().display();
+                    observer.onNext(instrumenter.getObservations());
+                }
             }
-        }
+            observer.onComplete();
+        }).subscribeOn(Schedulers.computation());
 
 //        Instrumenter instrumenter = new Instrumenter()
 //                .withProblem("UF1")
@@ -59,8 +64,6 @@ public class ExperimentService {
 //                .run();
 //
 //        instrumenter.getObservations().display();
-
-        return ExperimentId;
     }
 
     public List<Experiment> getExperiments() {

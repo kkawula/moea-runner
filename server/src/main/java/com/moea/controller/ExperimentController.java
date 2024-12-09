@@ -4,6 +4,8 @@ import com.moea.dto.ExperimentDTO;
 import com.moea.model.Experiment;
 import com.moea.model.ExperimentMetricResult;
 import com.moea.service.ExperimentService;
+
+import org.moeaframework.util.format.Displayable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,6 +37,10 @@ public class ExperimentController {
     @PostMapping()
     public Long createExperiment(@RequestBody ExperimentDTO experimentDTO) {
         Long newExperimentID = experimentService.saveNewRunningExperiment(experimentDTO);
-        return experimentService.createAndRunExperiment(newExperimentID);
+        experimentService.createAndRunExperiment(newExperimentID)
+                .doOnNext(Displayable::display)
+                .doOnComplete(() -> System.out.println("END OF EXPERIMENT: " + newExperimentID))
+                .subscribe();
+        return newExperimentID;
     }
 }

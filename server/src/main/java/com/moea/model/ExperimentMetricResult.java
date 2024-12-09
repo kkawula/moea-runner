@@ -1,5 +1,6 @@
 package com.moea.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,10 +21,12 @@ public class ExperimentMetricResult {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("experimentId")
+    @JsonBackReference
     private Experiment experiment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("metricId")
+    @JsonBackReference
     private Metric metric;
 
     @Column(name = "iteration", insertable = false, updatable = false)

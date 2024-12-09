@@ -1,5 +1,6 @@
 package com.moea.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.moea.ExperimentStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +33,7 @@ public class Experiment {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<Algorithm> algorithms = new ArrayList<>();
 
     @OneToMany(
@@ -39,6 +41,7 @@ public class Experiment {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<Problem> problems = new ArrayList<>();
 
     @OneToMany(
@@ -46,5 +49,6 @@ public class Experiment {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<ExperimentMetricResult> experimentMetricResults = new ArrayList<>();
 }

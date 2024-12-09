@@ -15,7 +15,7 @@ public class ExperimentResultsRepositoryImpl implements ExperimentResultsReposit
     }
 
     @Override
-    public List<ExperimentMetricResult> getResults(int experimentId) {
+    public List<ExperimentMetricResult> getResults(String experimentId) {
         return entityManager.createQuery("SELECT e FROM ExperimentMetricResult e WHERE e.experiment.id = :experimentId", ExperimentMetricResult.class)
                 .setParameter("experimentId", experimentId)
                 .getResultList();

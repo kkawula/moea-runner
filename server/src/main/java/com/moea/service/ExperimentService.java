@@ -9,11 +9,11 @@ import com.moea.model.Problem;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
 import jakarta.transaction.Transactional;
+import org.moeaframework.Executor;
+import org.moeaframework.Instrumenter;
 import org.springframework.stereotype.Service;
 
-import java.beans.Transient;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ExperimentService {
@@ -26,7 +26,39 @@ public class ExperimentService {
     }
 
     public Long createAndRunExperiment(Long ExperimentId) {
-        //TODO: Implement experiment running logic
+        Experiment experiment = experimentRepository.findById(ExperimentId).orElseThrow();
+
+        for (Problem problem : experiment.getProblems()) {
+            Instrumenter instrumenter;
+            for (Algorithm algorithm : experiment.getAlgorithms()) {
+                instrumenter = new Instrumenter()
+                        .withProblem(problem.getProblemName())
+                        .attachAllMetricCollectors();
+
+                new Executor()
+                        .withProblem(problem.getProblemName())
+                        .withAlgorithm(algorithm.getAlgorithmName())
+                        .withMaxEvaluations(experiment.getEvaluations())
+                        .withInstrumenter(instrumenter)
+                        .run();
+
+                System.out.println("Experiment " + ExperimentId + " finished for problem " + problem.getProblemName() + " and algorithm " + algorithm.getAlgorithmName());
+                instrumenter.getObservations().display();
+            }
+        }
+
+//        Instrumenter instrumenter = new Instrumenter()
+//                .withProblem("UF1")
+//                .attachAllMetricCollectors();
+//
+//        new Executor()
+//                .withProblem("UF1")
+//                .withAlgorithm("NSGAII")
+//                .withMaxEvaluations(1000)
+//                .withInstrumenter(instrumenter)
+//                .run();
+//
+//        instrumenter.getObservations().display();
 
         return ExperimentId;
     }

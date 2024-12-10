@@ -2,6 +2,7 @@ package com.moea.service;
 
 import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
+import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
@@ -12,6 +13,7 @@ import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
 import org.moeaframework.analysis.collector.Observation;
 import org.moeaframework.analysis.collector.Observations;
+import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,25 +29,29 @@ public class ExperimentService {
     }
 
     public Observable<Observations> createAndRunExperiment(Long ExperimentId) {
-        Experiment experiment = experimentRepository.findById(ExperimentId).orElseThrow();
+        Experiment experiment = experimentRepository.findById(ExperimentId).orElseThrow(ExperimentNotFoundException::new);
 
         return Observable.<Observations>create(observer -> {
-            for (Problem problem : experiment.getProblems()) {
-                Instrumenter instrumenter;
-                for (Algorithm algorithm : experiment.getAlgorithms()) {
-                    instrumenter = new Instrumenter()
-                            .withProblem(problem.getProblemName())
-                            .attachAllMetricCollectors();
+            try {
+                for (Problem problem : experiment.getProblems()) {
+                    Instrumenter instrumenter;
+                    for (Algorithm algorithm : experiment.getAlgorithms()) {
+                        instrumenter = new Instrumenter()
+                                .withProblem(problem.getProblemName())
+                                .attachAllMetricCollectors();
 
-                    new Executor()
-                            .withProblem(problem.getProblemName())
-                            .withAlgorithm(algorithm.getAlgorithmName())
-                            .withMaxEvaluations(experiment.getEvaluations())
-                            .withInstrumenter(instrumenter)
-                            .run();
+                        new Executor()
+                                .withProblem(problem.getProblemName())
+                                .withAlgorithm(algorithm.getAlgorithmName())
+                                .withMaxEvaluations(experiment.getEvaluations())
+                                .withInstrumenter(instrumenter)
+                                .run();
 
-                    observer.onNext(instrumenter.getObservations());
+                        observer.onNext(instrumenter.getObservations());
+                    }
                 }
+            } catch (ProviderNotFoundException e) {
+                observer.onError(e);
             }
             observer.onComplete();
         }).subscribeOn(Schedulers.computation());
@@ -60,7 +66,8 @@ public class ExperimentService {
     }
 
     public ExperimentStatus getExperimentStatus(String id) {
-        return experimentRepository.findById(Long.valueOf(id)).map(Experiment::getStatus).orElse(null);
+        return experimentRepository.findById(Long.valueOf(id)).map(Experiment::getStatus)
+                .orElseThrow(ExperimentNotFoundException::new);
     }
 
     @Transactional

@@ -34,7 +34,11 @@ public class ExperimentController {
 
     @GetMapping("/{id}/status")
     public String getExperimentStatus(@PathVariable String id) {
-        return experimentService.getExperimentStatus(id).name();
+        try {
+            return experimentService.getExperimentStatus(id).name();
+        } catch (ExperimentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping()

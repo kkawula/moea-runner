@@ -2,10 +2,7 @@ package com.moea.service;
 
 import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
-import com.moea.model.Algorithm;
-import com.moea.model.Experiment;
-import com.moea.model.ExperimentMetricResult;
-import com.moea.model.Problem;
+import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
 import io.reactivex.rxjava3.core.Observable;
@@ -13,6 +10,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import jakarta.transaction.Transactional;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
+import org.moeaframework.analysis.collector.Observation;
 import org.moeaframework.analysis.collector.Observations;
 import org.springframework.stereotype.Service;
 
@@ -51,19 +49,6 @@ public class ExperimentService {
             }
             observer.onComplete();
         }).subscribeOn(Schedulers.computation());
-
-//        Instrumenter instrumenter = new Instrumenter()
-//                .withProblem("UF1")
-//                .attachAllMetricCollectors();
-//
-//        new Executor()
-//                .withProblem("UF1")
-//                .withAlgorithm("NSGAII")
-//                .withMaxEvaluations(1000)
-//                .withInstrumenter(instrumenter)
-//                .run();
-//
-//        instrumenter.getObservations().display();
     }
 
     public List<Experiment> getExperiments() {
@@ -105,5 +90,40 @@ public class ExperimentService {
 
         Experiment result = experimentRepository.save(experiment);
         return result.getId();
+    }
+
+    public void saveExperimentResults(Long experimentId, List<Observations> results) {
+        Experiment experiment = experimentRepository.findById(experimentId).orElseThrow();
+        // TODO: Get metrics to save from the experiment
+//        List<String> metricsToSave = List.of("Hypervolume", "GenerationalDistance");
+        List<String> metricsToSave = List.of("Hypervolume");
+
+        for (Observations result : results) {
+            for (Observation row : result) {
+                for (String metric : metricsToSave) {
+                    // TODO:
+                    ExperimentMetricResultId id = new ExperimentMetricResultId(experimentId, 1L, row.getNFE());
+                    Metric metricEntity = Metric.builder().name(metric).build();
+
+                    ExperimentMetricResult experimentMetricResult = ExperimentMetricResult.builder()
+                            .id(id)
+                            .experiment(experiment)
+                            .metric(metricEntity)
+                            .iteration(row.getNFE())
+                            .result((Double) row.get(metric))
+                            .build();
+
+                    experimentResultsRepository.save(experimentMetricResult);
+                }
+            }
+        }
+
+        updateExperimentStatus(experimentId, ExperimentStatus.FINISHED);
+    }
+
+    public void updateExperimentStatus(Long experimentId, ExperimentStatus status) {
+        Experiment experiment = experimentRepository.findById(experimentId).orElseThrow();
+        experiment.setStatus(status);
+        experimentRepository.save(experiment);
     }
 }

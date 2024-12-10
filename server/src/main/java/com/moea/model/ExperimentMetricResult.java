@@ -33,7 +33,7 @@ public class ExperimentMetricResult {
     private int iteration;
 
     @Column(name = "result")
-    private float result;
+    private double result;
 
     @Override
     public boolean equals(Object o) {

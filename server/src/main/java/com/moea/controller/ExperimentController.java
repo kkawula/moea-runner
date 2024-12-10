@@ -1,13 +1,15 @@
 package com.moea.controller;
 
+import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
 import com.moea.model.Experiment;
 import com.moea.model.ExperimentMetricResult;
 import com.moea.service.ExperimentService;
 
-import org.moeaframework.util.format.Displayable;
+import org.moeaframework.analysis.collector.Observations;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -37,10 +39,15 @@ public class ExperimentController {
     @PostMapping()
     public Long createExperiment(@RequestBody ExperimentDTO experimentDTO) {
         Long newExperimentID = experimentService.saveNewRunningExperiment(experimentDTO);
+        List<Observations> results = new ArrayList<>();
+
         experimentService.createAndRunExperiment(newExperimentID)
-                .doOnNext(Displayable::display)
+                .doOnNext(results::add)
+                .doOnError(e -> experimentService.updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
                 .doOnComplete(() -> System.out.println("END OF EXPERIMENT: " + newExperimentID))
+                .doOnComplete(() -> experimentService.saveExperimentResults(newExperimentID, results))
                 .subscribe();
+
         return newExperimentID;
     }
 }

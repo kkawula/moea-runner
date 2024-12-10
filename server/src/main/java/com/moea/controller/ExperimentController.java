@@ -6,6 +6,7 @@ import com.moea.model.Experiment;
 import com.moea.model.ExperimentMetricResult;
 import com.moea.service.ExperimentService;
 
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.moeaframework.analysis.collector.Observations;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,9 +44,10 @@ public class ExperimentController {
 
         experimentService.createAndRunExperiment(newExperimentID)
                 .doOnNext(results::add)
-                .doOnError(e -> experimentService.updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
+                .observeOn(Schedulers.io())
                 .doOnComplete(() -> System.out.println("END OF EXPERIMENT: " + newExperimentID))
                 .doOnComplete(() -> experimentService.saveExperimentResults(newExperimentID, results))
+                .doOnError(e -> experimentService.updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
                 .subscribe();
 
         return newExperimentID;

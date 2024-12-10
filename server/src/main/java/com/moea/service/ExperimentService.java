@@ -85,30 +85,39 @@ public class ExperimentService {
                 )
                 .toList();
 
+        List<ExperimentMetric> metrics = experimentDTO.metrics().stream()
+                .map(metricName -> ExperimentMetric.builder()
+                        .metricName(metricName)
+                        .experiment(experiment)
+                        .build()
+                )
+                .toList();
+
         experiment.setAlgorithms(algorithms);
         experiment.setProblems(problems);
+        experiment.setMetrics(metrics);
 
         Experiment result = experimentRepository.save(experiment);
         return result.getId();
     }
 
+    @Transactional
     public void saveExperimentResults(Long experimentId, List<Observations> results) {
         Experiment experiment = experimentRepository.findById(experimentId).orElseThrow();
-        // TODO: Get metrics to save from the experiment
-//        List<String> metricsToSave = List.of("Hypervolume", "GenerationalDistance");
-        List<String> metricsToSave = List.of("Hypervolume");
+
+        List<String> metricsToSave = experiment.getMetrics().stream()
+                .map(ExperimentMetric::getMetricName)
+                .toList();
 
         for (Observations result : results) {
             for (Observation row : result) {
                 for (String metric : metricsToSave) {
-                    // TODO:
-                    ExperimentMetricResultId id = new ExperimentMetricResultId(experimentId, 1L, row.getNFE());
-                    Metric metricEntity = Metric.builder().name(metric).build();
+                    ExperimentMetricResultId id = new ExperimentMetricResultId(experimentId, metric, row.getNFE());
 
                     ExperimentMetricResult experimentMetricResult = ExperimentMetricResult.builder()
                             .id(id)
                             .experiment(experiment)
-                            .metric(metricEntity)
+                            .metric(metric)
                             .iteration(row.getNFE())
                             .result((Double) row.get(metric))
                             .build();

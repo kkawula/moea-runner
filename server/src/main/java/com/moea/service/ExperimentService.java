@@ -62,6 +62,7 @@ public class ExperimentService {
     }
 
     public List<ExperimentMetricResult> getExperimentResults(String id) {
+        experimentRepository.findById(Long.valueOf(id)).orElseThrow(ExperimentNotFoundException::new);
         return experimentResultsRepository.getResults(id);
     }
 

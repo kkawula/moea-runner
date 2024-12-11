@@ -32,7 +32,11 @@ public class ExperimentController {
 
     @GetMapping("/{id}")
     public List<ExperimentMetricResult> getExperimentResults(@PathVariable String id) {
-        return experimentService.getExperimentResults(id);
+        try {
+            return experimentService.getExperimentResults(id);
+        } catch (ExperimentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}/status")

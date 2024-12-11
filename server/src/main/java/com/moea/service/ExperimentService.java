@@ -2,18 +2,21 @@ package com.moea.service;
 
 import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
-import com.moea.model.Algorithm;
-import com.moea.model.Experiment;
-import com.moea.model.ExperimentMetricResult;
-import com.moea.model.Problem;
+import com.moea.exceptions.ExperimentNotFoundException;
+import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import jakarta.transaction.Transactional;
+import org.moeaframework.Executor;
+import org.moeaframework.Instrumenter;
+import org.moeaframework.analysis.collector.Observation;
+import org.moeaframework.analysis.collector.Observations;
+import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.beans.Transient;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ExperimentService {
@@ -25,10 +28,33 @@ public class ExperimentService {
         this.experimentResultsRepository = experimentResultsRepository;
     }
 
-    public Long createAndRunExperiment(Long ExperimentId) {
-        //TODO: Implement experiment running logic
+    public Observable<Observations> createAndRunExperiment(Long ExperimentId) {
+        Experiment experiment = experimentRepository.findById(ExperimentId).orElseThrow(ExperimentNotFoundException::new);
 
-        return ExperimentId;
+        return Observable.<Observations>create(observer -> {
+            try {
+                for (Problem problem : experiment.getProblems()) {
+                    Instrumenter instrumenter;
+                    for (Algorithm algorithm : experiment.getAlgorithms()) {
+                        instrumenter = new Instrumenter()
+                                .withProblem(problem.getProblemName())
+                                .attachAllMetricCollectors();
+
+                        new Executor()
+                                .withProblem(problem.getProblemName())
+                                .withAlgorithm(algorithm.getAlgorithmName())
+                                .withMaxEvaluations(experiment.getEvaluations())
+                                .withInstrumenter(instrumenter)
+                                .run();
+
+                        observer.onNext(instrumenter.getObservations());
+                    }
+                }
+            } catch (ProviderNotFoundException e) {
+                observer.onError(e);
+            }
+            observer.onComplete();
+        }).subscribeOn(Schedulers.computation());
     }
 
     public List<Experiment> getExperiments() {
@@ -36,11 +62,13 @@ public class ExperimentService {
     }
 
     public List<ExperimentMetricResult> getExperimentResults(String id) {
+        experimentRepository.findById(Long.valueOf(id)).orElseThrow(ExperimentNotFoundException::new);
         return experimentResultsRepository.getResults(id);
     }
 
     public ExperimentStatus getExperimentStatus(String id) {
-        return experimentRepository.findById(Long.valueOf(id)).map(Experiment::getStatus).orElse(null);
+        return experimentRepository.findById(Long.valueOf(id)).map(Experiment::getStatus)
+                .orElseThrow(ExperimentNotFoundException::new);
     }
 
     @Transactional
@@ -65,10 +93,54 @@ public class ExperimentService {
                 )
                 .toList();
 
+        List<ExperimentMetric> metrics = experimentDTO.metrics().stream()
+                .map(metricName -> ExperimentMetric.builder()
+                        .metricName(metricName)
+                        .experiment(experiment)
+                        .build()
+                )
+                .toList();
+
         experiment.setAlgorithms(algorithms);
         experiment.setProblems(problems);
+        experiment.setMetrics(metrics);
 
         Experiment result = experimentRepository.save(experiment);
         return result.getId();
+    }
+
+    @Transactional
+    public void saveExperimentResults(Long experimentId, List<Observations> results) {
+        Experiment experiment = experimentRepository.findById(experimentId).orElseThrow();
+
+        List<String> metricsToSave = experiment.getMetrics().stream()
+                .map(ExperimentMetric::getMetricName)
+                .toList();
+
+        for (Observations result : results) {
+            for (Observation row : result) {
+                for (String metric : metricsToSave) {
+                    ExperimentMetricResultId id = new ExperimentMetricResultId(experimentId, metric, row.getNFE());
+
+                    ExperimentMetricResult experimentMetricResult = ExperimentMetricResult.builder()
+                            .id(id)
+                            .experiment(experiment)
+                            .metric(metric)
+                            .iteration(row.getNFE())
+                            .result((Double) row.get(metric))
+                            .build();
+
+                    experimentResultsRepository.save(experimentMetricResult);
+                }
+            }
+        }
+
+        updateExperimentStatus(experimentId, ExperimentStatus.FINISHED);
+    }
+
+    public void updateExperimentStatus(Long experimentId, ExperimentStatus status) {
+        Experiment experiment = experimentRepository.findById(experimentId).orElseThrow();
+        experiment.setStatus(status);
+        experimentRepository.save(experiment);
     }
 }

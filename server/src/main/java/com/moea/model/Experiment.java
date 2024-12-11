@@ -50,5 +50,13 @@ public class Experiment {
             orphanRemoval = true
     )
     @JsonManagedReference
+    private List<ExperimentMetric> metrics = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "experiment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @JsonManagedReference
     private List<ExperimentMetricResult> experimentMetricResults = new ArrayList<>();
 }

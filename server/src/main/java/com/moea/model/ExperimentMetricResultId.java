@@ -17,8 +17,8 @@ public class ExperimentMetricResultId implements Serializable {
     @Column(name = "experiment_id")
     private Long experimentId;
 
-    @Column(name = "metric_id")
-    private Long metricId;
+    @Column(name = "metric")
+    private String metric;
 
     @Column(name = "iteration")
     private int iteration;
@@ -28,11 +28,11 @@ public class ExperimentMetricResultId implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ExperimentMetricResultId that = (ExperimentMetricResultId) o;
-        return Objects.equals(getExperimentId(), that.getExperimentId()) && Objects.equals(getMetricId(), that.getMetricId());
+        return Objects.equals(getExperimentId(), that.getExperimentId()) && Objects.equals(getMetric(), that.getMetric());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getExperimentId(), getMetricId());
+        return Objects.hash(getExperimentId(), getMetric());
     }
 }

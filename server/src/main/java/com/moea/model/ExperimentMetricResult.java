@@ -24,16 +24,14 @@ public class ExperimentMetricResult {
     @JsonBackReference
     private Experiment experiment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("metricId")
-    @JsonBackReference
-    private Metric metric;
+    @Column(name = "metric", insertable = false, updatable = false)
+    private String metric;
 
     @Column(name = "iteration", insertable = false, updatable = false)
     private int iteration;
 
     @Column(name = "result")
-    private float result;
+    private double result;
 
     @Override
     public boolean equals(Object o) {

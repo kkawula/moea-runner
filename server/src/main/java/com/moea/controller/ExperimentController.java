@@ -59,7 +59,7 @@ public class ExperimentController {
                 .observeOn(Schedulers.io())
                 .doOnComplete(() -> System.out.println("END OF EXPERIMENT: " + newExperimentID))
                 .doOnComplete(() -> experimentService.saveExperimentResults(newExperimentID, results))
-                .doOnError(_ -> experimentService.updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
+                .doOnError(e -> experimentService.updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
                 .subscribe();
 
         return newExperimentID;

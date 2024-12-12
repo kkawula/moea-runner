@@ -2,11 +2,11 @@ package com.moea.controller;
 
 import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
+import com.moea.dto.ExperimentResultDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
-import com.moea.model.Experiment;
-import com.moea.model.ExperimentMetricResult;
 import com.moea.service.ExperimentService;
 
+import com.moea.util.ExperimentMapper;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.moeaframework.analysis.collector.Observations;
 import org.springframework.http.HttpStatus;
@@ -20,20 +20,31 @@ import java.util.List;
 @RequestMapping(path = "/experiments")
 public class ExperimentController {
     private final ExperimentService experimentService;
+    private final ExperimentMapper experimentMapper;
 
-    public ExperimentController(ExperimentService experimentService) {
+    public ExperimentController(ExperimentService experimentService, ExperimentMapper experimentMapper) {
         this.experimentService = experimentService;
+        this.experimentMapper = experimentMapper;
     }
 
     @GetMapping
-    public List<Experiment> getExperiments() {
-        return experimentService.getExperiments();
+    public List<ExperimentDTO> getExperiments() {
+        return experimentService.getExperiments().stream()
+                .map(experimentMapper::toDTO)
+                .toList();
     }
 
     @GetMapping("/{id}/results")
-    public List<ExperimentMetricResult> getExperimentResults(@PathVariable String id) {
+    public List<ExperimentResultDTO> getExperimentResults(@PathVariable String id) {
         try {
-            return experimentService.getExperimentResults(id);
+            return experimentService.getExperimentResults(id).stream()
+                    .map(result -> ExperimentResultDTO.builder()
+                            .iteration(result.getIteration())
+                            .metric(result.getMetric())
+                            .result(result.getResult())
+                            .build()
+                    )
+                    .toList();
         } catch (ExperimentNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -50,18 +61,21 @@ public class ExperimentController {
 
     @PostMapping()
     public Long createExperiment(@RequestBody ExperimentDTO experimentDTO) {
-        // TODO: Add name checking for algorithms, problem and metrics to throw BAD_REQUEST
-        Long newExperimentID = experimentService.saveNewRunningExperiment(experimentDTO);
-        List<Observations> results = new ArrayList<>();
+        try {
+            experimentService.validateExperimentDTO(experimentDTO);
+            Long newExperimentID = experimentService.saveNewRunningExperiment(experimentDTO);
+            List<Observations> results = new ArrayList<>();
 
-        experimentService.createAndRunExperiment(newExperimentID)
-                .doOnNext(results::add)
-                .observeOn(Schedulers.io())
-                .doOnComplete(() -> System.out.println("END OF EXPERIMENT: " + newExperimentID))
-                .doOnComplete(() -> experimentService.saveExperimentResults(newExperimentID, results))
-                .doOnError(e -> experimentService.updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
-                .subscribe();
+            experimentService.createAndRunExperiment(newExperimentID)
+                    .doOnNext(results::add)
+                    .observeOn(Schedulers.io())
+                    .doOnComplete(() -> experimentService.saveExperimentResults(newExperimentID, results))
+                    .doOnError(e -> experimentService.updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
+                    .subscribe();
 
-        return newExperimentID;
+            return newExperimentID;
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 }

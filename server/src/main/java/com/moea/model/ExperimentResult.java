@@ -1,6 +1,5 @@
 package com.moea.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,14 +13,13 @@ import java.util.Objects;
 @Table(name = "experiments_metrics_results")
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExperimentMetricResult {
+public class ExperimentResult {
 
     @EmbeddedId
-    private ExperimentMetricResultId id;
+    private ExperimentResultId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("experimentId")
-    @JsonBackReference
     private Experiment experiment;
 
     @Column(name = "metric", insertable = false, updatable = false)
@@ -37,7 +35,7 @@ public class ExperimentMetricResult {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ExperimentMetricResult that = (ExperimentMetricResult) o;
+        ExperimentResult that = (ExperimentResult) o;
         return getIteration() == that.getIteration() && Objects.equals(getExperiment(), that.getExperiment()) && Objects.equals(getMetric(), that.getMetric());
     }
 

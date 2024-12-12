@@ -30,7 +30,7 @@ public class ExperimentController {
         return experimentService.getExperiments();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/results")
     public List<ExperimentMetricResult> getExperimentResults(@PathVariable String id) {
         try {
             return experimentService.getExperimentResults(id);

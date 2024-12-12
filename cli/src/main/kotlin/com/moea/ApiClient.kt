@@ -20,7 +20,7 @@ class ApiClient(private val baseUrl: String) {
     }
 
     suspend fun getExperimentResult(id: Int): List<ExperimentMetricResult> {
-        return client.get("$baseUrl/experiments/$id").body()
+        return client.get("$baseUrl/experiments/$id/results").body()
     }
 
     suspend fun getExperimentStatus(id: Int): String {

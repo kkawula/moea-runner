@@ -10,11 +10,11 @@ import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.int
 import kotlinx.coroutines.runBlocking
 
-class MainApp : CliktCommand("CLI for interacting with the Experiments API") {
+class MainApp : CliktCommand("CLI for interacting with the MOEA Framework Server") {
     override fun run() = Unit
 }
 
-class ListExperimentsCommand(private val apiClient: ApiClient) : CliktCommand("List all experiments") {
+class ListExperimentsCommand(private val apiClient: ApiClient) : CliktCommand("experiments-list") {
     override fun run() = runBlocking {
         val experiments: List<Experiment> = apiClient.getExperimentList()
         for (experiment in experiments) {
@@ -23,7 +23,7 @@ class ListExperimentsCommand(private val apiClient: ApiClient) : CliktCommand("L
     }
 }
 
-class GetExperimentResultsCommand(private val apiClient: ApiClient) : CliktCommand("Get an experiment results by ID") {
+class GetExperimentResultsCommand(private val apiClient: ApiClient) : CliktCommand("experiment-results") {
     val id by argument().int()
 
     override fun run() = runBlocking {
@@ -34,7 +34,7 @@ class GetExperimentResultsCommand(private val apiClient: ApiClient) : CliktComma
     }
 }
 
-class GetExperimentStatusCommand(private val apiClient: ApiClient) : CliktCommand("Get an experiment status by ID") {
+class GetExperimentStatusCommand(private val apiClient: ApiClient) : CliktCommand("experiment-status") {
     val id by argument().int()
 
     override fun run() = runBlocking {
@@ -43,7 +43,7 @@ class GetExperimentStatusCommand(private val apiClient: ApiClient) : CliktComman
     }
 }
 
-class CreateExperimentCommand(private val apiClient: ApiClient) : CliktCommand("Create an experiment") {
+class CreateExperimentCommand(private val apiClient: ApiClient) : CliktCommand("experiment-create") {
     val evaluations by option("--evaluations", help = "Number of evaluations").int().required()
     val algorithms by option("--algorithms", help = "Comma-separated list of algorithms").split(",").required()
     val problems by option("--problems", help = "Comma-separated list of problems").split(",").required()

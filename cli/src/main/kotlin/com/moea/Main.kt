@@ -28,9 +28,7 @@ class GetExperimentResultsCommand(private val apiClient: ApiClient) : CliktComma
 
     override fun run() = runBlocking {
         val experimentResults: List<ExperimentResult> = apiClient.getExperimentResult(id)
-        for (experimentResult in experimentResults) {
-            println(experimentResult.prettyRepr())
-        }
+        printFormattedResults(experimentResults)
     }
 }
 

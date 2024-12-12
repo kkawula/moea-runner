@@ -11,7 +11,6 @@ import java.util.List;
 @Setter
 @Getter
 @Builder
-@ToString
 @Table(name = "experiments")
 @AllArgsConstructor
 @NoArgsConstructor

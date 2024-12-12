@@ -1,9 +1,9 @@
 package com.moea.repository;
 
-import com.moea.model.ExperimentMetricResult;
+import com.moea.model.ExperimentResult;
 
 import java.util.List;
 
 public interface ExperimentResultsRepositoryCustom {
-    List<ExperimentMetricResult> getResults(String experimentId);
+    List<ExperimentResult> getResults(String experimentId);
 }

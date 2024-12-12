@@ -27,7 +27,7 @@ class GetExperimentResultsCommand(private val apiClient: ApiClient) : CliktComma
     val id by argument().int()
 
     override fun run() = runBlocking {
-        val experimentResults: List<ExperimentMetricResult> = apiClient.getExperimentResult(id)
+        val experimentResults: List<ExperimentResult> = apiClient.getExperimentResult(id)
         for (experimentResult in experimentResults) {
             println(experimentResult.prettyRepr())
         }

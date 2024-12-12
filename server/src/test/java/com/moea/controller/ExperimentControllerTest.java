@@ -3,7 +3,7 @@ package com.moea.controller;
 import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
 import com.moea.model.Experiment;
-import com.moea.model.ExperimentMetricResult;
+import com.moea.model.ExperimentResult;
 import com.moea.service.ExperimentService;
 import io.reactivex.rxjava3.core.Observable;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,10 +95,10 @@ public class ExperimentControllerTest {
     @Test
     public void testGetExperimentResults_SampleDataOfExperimentResult_ExpectedStatusOkWithNotEmptyBody() throws Exception {
         //given
-        List<ExperimentMetricResult> experimentMetricResults = List.of(new ExperimentMetricResult());
+        List<ExperimentResult> experimentResults = List.of(new ExperimentResult());
 
         //when
-        when(experimentService.getExperimentResults("1")).thenReturn(experimentMetricResults);
+        when(experimentService.getExperimentResults("1")).thenReturn(experimentResults);
 
         //then
         mockMvc.perform(get("/experiments/1"))

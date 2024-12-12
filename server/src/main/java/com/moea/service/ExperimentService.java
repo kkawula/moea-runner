@@ -6,6 +6,7 @@ import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
+import com.moea.util.ExperimentMapper;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import jakarta.transaction.Transactional;
@@ -22,10 +23,12 @@ import java.util.List;
 public class ExperimentService {
     private final ExperimentRepository experimentRepository;
     private final ExperimentResultsRepository experimentResultsRepository;
+    private final ExperimentMapper experimentMapper;
 
-    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository) {
+    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentMapper experimentMapper) {
         this.experimentRepository = experimentRepository;
         this.experimentResultsRepository = experimentResultsRepository;
+        this.experimentMapper = experimentMapper;
     }
 
     public Observable<Observations> createAndRunExperiment(Long ExperimentId) {
@@ -61,7 +64,7 @@ public class ExperimentService {
         return experimentRepository.findAll();
     }
 
-    public List<ExperimentMetricResult> getExperimentResults(String id) {
+    public List<ExperimentResult> getExperimentResults(String id) {
         experimentRepository.findById(Long.valueOf(id)).orElseThrow(ExperimentNotFoundException::new);
         return experimentResultsRepository.getResults(id);
     }
@@ -71,39 +74,30 @@ public class ExperimentService {
                 .orElseThrow(ExperimentNotFoundException::new);
     }
 
+    public void validateExperimentDTO(ExperimentDTO experimentDTO) {
+        if (experimentDTO.getEvaluations() <= 0) {
+            throw new IllegalArgumentException("Evaluations must be greater than 0");
+        }
+
+        if (experimentDTO.getAlgorithms().isEmpty()) {
+            throw new IllegalArgumentException("At least one algorithm must be selected");
+        }
+
+        if (experimentDTO.getProblems().isEmpty()) {
+            throw new IllegalArgumentException("At least one problem must be selected");
+        }
+
+        if (experimentDTO.getMetrics().isEmpty()) {
+            throw new IllegalArgumentException("At least one metric must be selected");
+        }
+
+        //TODO: Check if the selected algorithms, problems and metrics are valid
+    }
+
     @Transactional
     public Long saveNewRunningExperiment(ExperimentDTO experimentDTO) {
-        Experiment experiment = Experiment.builder()
-                .evaluations(experimentDTO.evaluations())
-                .status(ExperimentStatus.RUNNING)
-                .build();
-
-        List<Algorithm> algorithms = experimentDTO.algorithms().stream()
-                .map(algorithmName -> Algorithm.builder()
-                        .algorithmName(algorithmName)
-                        .experiment(experiment)
-                        .build())
-                .toList();
-
-        List<Problem> problems = experimentDTO.problems().stream()
-                .map(problemName -> Problem.builder()
-                        .problemName(problemName)
-                        .experiment(experiment)
-                        .build()
-                )
-                .toList();
-
-        List<ExperimentMetric> metrics = experimentDTO.metrics().stream()
-                .map(metricName -> ExperimentMetric.builder()
-                        .metricName(metricName)
-                        .experiment(experiment)
-                        .build()
-                )
-                .toList();
-
-        experiment.setAlgorithms(algorithms);
-        experiment.setProblems(problems);
-        experiment.setMetrics(metrics);
+        Experiment experiment = experimentMapper.fromDTO(experimentDTO);
+        experiment.setStatus(ExperimentStatus.RUNNING);
 
         Experiment result = experimentRepository.save(experiment);
         return result.getId();
@@ -120,9 +114,9 @@ public class ExperimentService {
         for (Observations result : results) {
             for (Observation row : result) {
                 for (String metric : metricsToSave) {
-                    ExperimentMetricResultId id = new ExperimentMetricResultId(experimentId, metric, row.getNFE());
+                    ExperimentResultId id = new ExperimentResultId(experimentId, metric, row.getNFE());
 
-                    ExperimentMetricResult experimentMetricResult = ExperimentMetricResult.builder()
+                    ExperimentResult experimentResult = ExperimentResult.builder()
                             .id(id)
                             .experiment(experiment)
                             .metric(metric)
@@ -130,7 +124,7 @@ public class ExperimentService {
                             .result((Double) row.get(metric))
                             .build();
 
-                    experimentResultsRepository.save(experimentMetricResult);
+                    experimentResultsRepository.save(experimentResult);
                 }
             }
         }
@@ -139,7 +133,7 @@ public class ExperimentService {
     }
 
     public void updateExperimentStatus(Long experimentId, ExperimentStatus status) {
-        Experiment experiment = experimentRepository.findById(experimentId).orElseThrow();
+        Experiment experiment = experimentRepository.findById(experimentId).orElseThrow(ExperimentNotFoundException::new);
         experiment.setStatus(status);
         experimentRepository.save(experiment);
     }

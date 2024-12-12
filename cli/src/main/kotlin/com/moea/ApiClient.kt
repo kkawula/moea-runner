@@ -19,7 +19,7 @@ class ApiClient(private val baseUrl: String) {
         return client.get("$baseUrl/experiments").body()
     }
 
-    suspend fun getExperimentResult(id: Int): List<ExperimentMetricResult> {
+    suspend fun getExperimentResult(id: Int): List<ExperimentResult> {
         return client.get("$baseUrl/experiments/$id/results").body()
     }
 

@@ -1,6 +1,6 @@
 package com.moea.repository;
 
-import com.moea.model.ExperimentMetricResult;
+import com.moea.model.ExperimentResult;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
@@ -15,8 +15,8 @@ public class ExperimentResultsRepositoryImpl implements ExperimentResultsReposit
     }
 
     @Override
-    public List<ExperimentMetricResult> getResults(String experimentId) {
-        return entityManager.createQuery("SELECT e FROM ExperimentMetricResult e WHERE e.experiment.id = :experimentId", ExperimentMetricResult.class)
+    public List<ExperimentResult> getResults(String experimentId) {
+        return entityManager.createQuery("SELECT e FROM ExperimentResult e WHERE e.experiment.id = :experimentId", ExperimentResult.class)
                 .setParameter("experimentId", experimentId)
                 .getResultList();
     }

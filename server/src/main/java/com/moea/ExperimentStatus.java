@@ -1,6 +1,7 @@
 package com.moea;
 
 public enum ExperimentStatus {
+    NEW("new"),
     RUNNING("running"),
     FINISHED("finished"),
     ERROR("error");

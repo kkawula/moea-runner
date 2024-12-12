@@ -13,7 +13,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
-public class ExperimentMetricResultId implements Serializable {
+public class ExperimentResultId implements Serializable {
     @Column(name = "experiment_id")
     private Long experimentId;
 
@@ -27,7 +27,7 @@ public class ExperimentMetricResultId implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ExperimentMetricResultId that = (ExperimentMetricResultId) o;
+        ExperimentResultId that = (ExperimentResultId) o;
         return Objects.equals(getExperimentId(), that.getExperimentId()) && Objects.equals(getMetric(), that.getMetric());
     }
 

@@ -1,22 +1,35 @@
 package com.moea
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.optionalValue
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.int
 import kotlinx.coroutines.runBlocking
-import kotlin.system.exitProcess
+
+const val BASE_URL = "http://localhost:8080"
+
+data class CommonArgs(var url: String = BASE_URL)
 
 class MainApp : CliktCommand("CLI for interacting with the MOEA Framework Server") {
-    override fun run() = Unit
+    override val printHelpOnEmptyArgs = true
+
+    private val url by option("--url", help = "Base URL of the server, default: $BASE_URL").optionalValue(BASE_URL)
+    private val commonArgs by findOrSetObject { CommonArgs(BASE_URL) }
+
+    override fun run() {
+        commonArgs.url = url ?: BASE_URL
+    }
 }
 
-class ListExperimentsCommand(private val apiClient: ApiClient) : CliktCommand("experiments-list") {
+class ListExperimentsCommand : CliktCommand("experiments-list") {
+    private val commonArgs by requireObject<CommonArgs>()
+
     override fun run() = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
         val experiments: List<Experiment> = apiClient.getExperimentList()
         for (experiment in experiments) {
             println(experiment.prettyRepr())
@@ -24,31 +37,43 @@ class ListExperimentsCommand(private val apiClient: ApiClient) : CliktCommand("e
     }
 }
 
-class GetExperimentResultsCommand(private val apiClient: ApiClient) : CliktCommand("experiment-results") {
+class GetExperimentResultsCommand : CliktCommand("experiment-results") {
+    private val commonArgs by requireObject<CommonArgs>()
+
     val id by argument().int()
 
     override fun run() = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
         val experimentResults: List<ExperimentResult> = apiClient.getExperimentResults(id)
         printFormattedResults(experimentResults)
     }
 }
 
-class GetExperimentStatusCommand(private val apiClient: ApiClient) : CliktCommand("experiment-status") {
+class GetExperimentStatusCommand : CliktCommand("experiment-status") {
+    private val commonArgs by requireObject<CommonArgs>()
+
     val id by argument().int()
 
     override fun run() = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
         val experiment: String = apiClient.getExperimentStatus(id)
         println("Experiment status: ${experiment}")
     }
 }
 
-class CreateExperimentCommand(private val apiClient: ApiClient) : CliktCommand("experiment-create") {
+class CreateExperimentCommand : CliktCommand("experiment-create") {
+    private val commonArgs by requireObject<CommonArgs>()
+
     val evaluations by option("--evaluations", help = "Number of evaluations").int().required()
     val algorithms by option("--algorithms", help = "Comma-separated list of algorithms").split(",").required()
     val problems by option("--problems", help = "Comma-separated list of problems").split(",").required()
     val metrics by option("--metrics", help = "Comma-separated list of metrics").split(",").required()
 
     override fun run() = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
         val newExperiment = NewExperiment(
             evaluations = evaluations,
             algorithms = algorithms,
@@ -62,20 +87,12 @@ class CreateExperimentCommand(private val apiClient: ApiClient) : CliktCommand("
 }
 
 fun main(args: Array<String>) {
-    val baseUrl = "http://localhost:8080"
-    val apiClient = ApiClient(baseUrl)
-
-    if (!apiClient.checkHostAlive()) {
-        System.err.println("ERROR: Host ${baseUrl} is not reachable.")
-        exitProcess(1)
-    }
-
     MainApp()
         .subcommands(
-            ListExperimentsCommand(apiClient),
-            GetExperimentResultsCommand(apiClient),
-            GetExperimentStatusCommand(apiClient),
-            CreateExperimentCommand(apiClient),
+            ListExperimentsCommand(),
+            GetExperimentResultsCommand(),
+            GetExperimentStatusCommand(),
+            CreateExperimentCommand(),
         )
         .main(args)
 }

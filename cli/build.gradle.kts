@@ -35,3 +35,9 @@ application {
     mainClass.set("com.moea.MainKt")
     applicationName = "moea-client"
 }
+
+tasks.named("installDist") {
+    doLast({
+        println("Installed binaries")
+    })
+}

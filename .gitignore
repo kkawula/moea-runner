@@ -1,8 +1,6 @@
 Database.mv.db
 Database.trace.db
 .gradle
-gradlew
-gradlew.bat
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/

@@ -23,7 +23,7 @@ class ListExperimentsCommand(private val apiClient: ApiClient) : CliktCommand("L
     }
 }
 
-class GetExperimentCommand(private val apiClient: ApiClient) : CliktCommand("Get an experiment by ID") {
+class GetExperimentResultsCommand(private val apiClient: ApiClient) : CliktCommand("Get an experiment results by ID") {
     val id by argument().int()
 
     override fun run() = runBlocking {
@@ -68,7 +68,7 @@ fun main(args: Array<String>) {
     MainApp()
         .subcommands(
             ListExperimentsCommand(apiClient),
-            GetExperimentCommand(apiClient),
+            GetExperimentResultsCommand(apiClient),
             GetExperimentStatusCommand(apiClient),
             CreateExperimentCommand(apiClient),
         )

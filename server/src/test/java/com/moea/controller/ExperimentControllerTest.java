@@ -5,10 +5,12 @@ import com.moea.dto.ExperimentDTO;
 import com.moea.model.Experiment;
 import com.moea.model.ExperimentMetricResult;
 import com.moea.service.ExperimentService;
+import io.reactivex.rxjava3.core.Observable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.moeaframework.analysis.collector.Observations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -50,42 +52,46 @@ public class ExperimentControllerTest {
                 .andExpect(jsonPath("$[1].id").value(2));
     }
 
-//    @Test
-//    public void testCreateExperiment_SampleOfExperimentDTODataAndRequestBody_ExpectedStatusOk() throws Exception {
-//        //given
-//        ExperimentDTO experimentDTO = ExperimentDTO.builder()
-//                .evaluations(10)
-//                .algorithms(List.of("algos1", "algos2"))
-//                .problems(List.of("problem1", "problem2"))
-//                .metrics(List.of("metryka1", "metryka2"))
-//                .build();
-//
-//        String requestBody = "{\n" +
-//                "  \"evaluations\": 10,\n" +
-//                "  \"algorithms\": [\n" +
-//                "    \"algos1\",\n" +
-//                "    \"algos2\"\n" +
-//                "  ],\n" +
-//                "  \"problems\": [\n" +
-//                "    \"problem1\",\n" +
-//                "    \"problem2\"\n" +
-//                "  ],\n" +
-//                "  \"metrics\": [\n" +
-//                "    \"metryka1\",\n" +
-//                "    \"metryka2\"\n" +
-//                "  ]\n" +
-//                "}";
-//
-//        //when
-//        when(experimentService.saveNewRunningExperiment(experimentDTO)).thenReturn(1L);
-//
-//        //then
-//        mockMvc.perform(post("/experiments")
-//                        .contentType("application/json")
-//                        .content(requestBody))
-//                .andExpect(status().isOk());
-//    }
+    @Test
+    public void testCreateExperiment_SampleOfExperimentDTODataAndRequestBody_ExpectedStatusOk() throws Exception {
+        //given
+        ExperimentDTO experimentDTO = ExperimentDTO.builder()
+                .evaluations(10)
+                .algorithms(List.of("algos1", "algos2"))
+                .problems(List.of("problem1", "problem2"))
+                .metrics(List.of("metryka1", "metryka2"))
+                .build();
 
+        Observable<Observations> ob = Observable.just(new Observations());
+
+        String requestBody = """
+                {
+                  "evaluations": 10,
+                  "algorithms": [
+                    "algos1",
+                    "algos2"
+                  ],
+                  "problems": [
+                    "problem1",
+                    "problem2"
+                  ],
+                  "metrics": [
+                    "metryka1",
+                    "metryka2"
+                  ]
+                }
+                """;
+
+        //when
+        when(experimentService.saveNewRunningExperiment(experimentDTO)).thenReturn(1L);
+        when(experimentService.createAndRunExperiment(1L)).thenReturn(ob);
+
+        //then
+        mockMvc.perform(post("/experiments")
+                        .contentType("application/json")
+                        .content(requestBody))
+                .andExpect(status().isOk());
+    }
     @Test
     public void testGetExperimentResults_SampleDataOfExperimentResult_ExpectedStatusOkWithNotEmptyBody() throws Exception {
         //given

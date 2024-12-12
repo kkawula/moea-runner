@@ -14,10 +14,16 @@ import jakarta.transaction.Transactional;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
 import org.moeaframework.analysis.collector.Observation;
+import org.moeaframework.core.indicator.StandardIndicator;
 import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.moeaframework.core.Settings.getDiagnosticToolProblems;
 
 @Service
 public class ExperimentService {
@@ -97,7 +103,21 @@ public class ExperimentService {
             throw new IllegalArgumentException("At least one metric must be selected");
         }
 
-        //TODO: Check if the selected algorithms, problems and metrics are valid
+        for (String problem : experimentDTO.getProblems()) {
+            if (!getDiagnosticToolProblems().contains(problem)) {
+                throw new IllegalArgumentException("Invalid problem: " + problem);
+            }
+        }
+
+        Set<String> validMetrics = Arrays.stream(StandardIndicator.values()).map(StandardIndicator::name).collect(Collectors.toSet());
+
+        for (String metric : experimentDTO.getMetrics()) {
+            if (!validMetrics.contains(metric)) {
+                throw new IllegalArgumentException("Invalid metric: " + metric);
+            }
+        }
+
+        //TODO: Check if the selected algorithms are valid
     }
 
     @Transactional

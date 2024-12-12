@@ -1,22 +1,25 @@
 package com.moea.controller;
 
 import com.moea.ExperimentStatus;
+import com.moea.dto.AlgorithmProblemResult;
 import com.moea.dto.ExperimentDTO;
 import com.moea.model.Experiment;
 import com.moea.model.ExperimentResult;
 import com.moea.service.ExperimentService;
+import com.moea.util.ExperimentMapper;
 import io.reactivex.rxjava3.core.Observable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.moeaframework.analysis.collector.Observations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,6 +30,8 @@ public class ExperimentControllerTest {
     private MockMvc mockMvc;
     @Mock
     ExperimentService experimentService;
+    @Mock
+    ExperimentMapper experimentMapper;
     @InjectMocks
     ExperimentController controllerUnderTest;
 
@@ -35,14 +40,18 @@ public class ExperimentControllerTest {
         this.mockMvc = MockMvcBuilders.standaloneSetup(controllerUnderTest).build();
     }
 
-    /*
     @Test
     public void testGetExperiments_SampleListOfExperiments_ExpectedCorrectValuesInResponseBody() throws Exception {
         //given
-        List<Experiment> experiments = List.of(Experiment.builder().id(1L).build(), Experiment.builder().id(2L).build());
+        Experiment experiment1 = Experiment.builder().id(1L).build();
+        ExperimentDTO experimentDTO1 = ExperimentDTO.builder().id(1L).build();
+        Experiment experiment2 = Experiment.builder().id(2L).build();
+        ExperimentDTO experimentDTO2 = ExperimentDTO.builder().id(2L).build();
 
         //when
-        when(experimentService.getExperiments()).thenReturn(experiments);
+        when(experimentService.getExperiments()).thenReturn(List.of(experiment1, experiment2));
+        when(experimentMapper.toDTO(any(Experiment.class))).thenReturn(experimentDTO1).thenReturn(experimentDTO2);
+
 
         //then
         mockMvc.perform(get("/experiments"))
@@ -52,6 +61,7 @@ public class ExperimentControllerTest {
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[1].id").value(2));
     }
+
 
     @Test
     public void testCreateExperiment_SampleOfExperimentDTODataAndRequestBody_ExpectedStatusOk() throws Exception {
@@ -63,7 +73,7 @@ public class ExperimentControllerTest {
                 .metrics(List.of("Hypervolume", "Spacing"))
                 .build();
 
-        Observable<Observations> ob = Observable.just(new Observations());
+        Observable<AlgorithmProblemResult> ob = Observable.just(new AlgorithmProblemResult());
 
         String requestBody = """
                 {
@@ -85,8 +95,8 @@ public class ExperimentControllerTest {
 
         //when
         when(experimentService.saveNewRunningExperiment(experimentDTO)).thenReturn(1L);
-        when(experimentService.saveNewRunningExperiment(experimentDTO)).thenReturn(1L);
-        when(experimentService.createAndRunExperiment(1L)).thenReturn(ob);
+        doNothing().when(experimentService).validateExperimentDTO(any(ExperimentDTO.class));
+        when(experimentService.createAndRunExperiment(any(Long.class))).thenReturn(ob);
 
         //then
         mockMvc.perform(post("/experiments")
@@ -95,8 +105,6 @@ public class ExperimentControllerTest {
                 .andExpect(status().isOk());
     }
 
-
-     */
     @Test
     public void testGetExperimentResults_SampleDataOfExperimentResult_ExpectedStatusOkWithNotEmptyBody() throws Exception {
         //given

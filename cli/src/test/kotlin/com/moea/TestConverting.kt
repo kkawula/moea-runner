@@ -23,10 +23,8 @@ class TestConverting {
 
     @Test
     fun testGetExperimentResult() = runBlocking {
-        val experimentResult = apiClient.getExperimentResult(1)
-        experimentResult.forEach {
-            println(it.prettyRepr())
-        }
+        val experimentResults = apiClient.getExperimentResults(1)
+        printFormattedResults(experimentResults)
     }
 
     @Test

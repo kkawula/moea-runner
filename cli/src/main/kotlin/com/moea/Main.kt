@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.int
 import kotlinx.coroutines.runBlocking
+import kotlin.system.exitProcess
 
 class MainApp : CliktCommand("CLI for interacting with the MOEA Framework Server") {
     override fun run() = Unit
@@ -27,7 +28,7 @@ class GetExperimentResultsCommand(private val apiClient: ApiClient) : CliktComma
     val id by argument().int()
 
     override fun run() = runBlocking {
-        val experimentResults: List<ExperimentResult> = apiClient.getExperimentResult(id)
+        val experimentResults: List<ExperimentResult> = apiClient.getExperimentResults(id)
         printFormattedResults(experimentResults)
     }
 }
@@ -61,7 +62,13 @@ class CreateExperimentCommand(private val apiClient: ApiClient) : CliktCommand("
 }
 
 fun main(args: Array<String>) {
-    val apiClient = ApiClient("http://localhost:8080")
+    val baseUrl = "http://localhost:8080"
+    val apiClient = ApiClient(baseUrl)
+
+    if (!apiClient.checkHostAlive()) {
+        System.err.println("ERROR: Host ${baseUrl} is not reachable.")
+        exitProcess(1)
+    }
 
     MainApp()
         .subcommands(

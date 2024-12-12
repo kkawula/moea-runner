@@ -4,11 +4,11 @@ import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
 import com.moea.dto.ExperimentResultDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
+import com.moea.dto.AlgorithmProblemResult;
 import com.moea.service.ExperimentService;
 
 import com.moea.util.ExperimentMapper;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import org.moeaframework.analysis.collector.Observations;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,8 +39,10 @@ public class ExperimentController {
         try {
             return experimentService.getExperimentResults(id).stream()
                     .map(result -> ExperimentResultDTO.builder()
-                            .iteration(result.getIteration())
+                            .problem(result.getProblem())
+                            .algorithm(result.getAlgorithm())
                             .metric(result.getMetric())
+                            .iteration(result.getIteration())
                             .result(result.getResult())
                             .build()
                     )
@@ -64,7 +66,7 @@ public class ExperimentController {
         try {
             experimentService.validateExperimentDTO(experimentDTO);
             Long newExperimentID = experimentService.saveNewRunningExperiment(experimentDTO);
-            List<Observations> results = new ArrayList<>();
+            List<AlgorithmProblemResult> results = new ArrayList<>();
 
             experimentService.createAndRunExperiment(newExperimentID)
                     .doOnNext(results::add)

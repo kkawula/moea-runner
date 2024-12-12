@@ -17,33 +17,18 @@ data class Experiment(
     val id: Long,
     val evaluations: Int,
     val status: String,
-    val algorithms: List<Algorithm>,
-    val problems: List<Problem>,
-    val metrics: List<Metric>,
-)
-
-data class Algorithm(
-    val id: Long,
-    val algorithmName: String
-)
-
-data class Problem(
-    val id: Long,
-    val problemName: String
-)
-
-data class Metric(
-    val id: Long,
-    val metricName: String
+    val algorithms: List<String>,
+    val problems: List<String>,
+    val metrics: List<String>,
 )
 
 fun Experiment.prettyRepr(): String {
     return "Experiment $id\n" +
             "Evaluations: $evaluations\n" +
             "Status: $status\n" +
-            "Algorithms: ${algorithms.joinToString { it.algorithmName }}\n" +
-            "Problems: ${problems.joinToString { it.problemName }}\n" +
-            "Metrics: ${metrics.joinToString { it.metricName }}\n"
+            "Algorithms: ${algorithms.joinToString { it }}\n" +
+            "Problems: ${problems.joinToString { it }}\n" +
+            "Metrics: ${metrics.joinToString { it }}\n"
 }
 
 fun ExperimentResult.prettyRepr(): String {

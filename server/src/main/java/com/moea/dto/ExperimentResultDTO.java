@@ -10,7 +10,9 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class ExperimentResultDTO {
-    private int iteration;
+    private String problem;
+    private String algorithm;
     private String metric;
+    private int iteration;
     private double result;
 }

@@ -9,7 +9,6 @@ import java.util.Objects;
 @Setter
 @Getter
 @Builder
-@ToString
 @Table(name = "experiments_metrics_results")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,6 +20,12 @@ public class ExperimentResult {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("experimentId")
     private Experiment experiment;
+
+    @Column(name = "problem")
+    private String problem;
+
+    @Column(name = "algorithm")
+    private String algorithm;
 
     @Column(name = "metric", insertable = false, updatable = false)
     private String metric;

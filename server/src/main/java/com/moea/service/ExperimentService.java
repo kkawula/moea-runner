@@ -19,6 +19,7 @@ import org.moeaframework.core.indicator.StandardIndicator;
 import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,21 @@ public class ExperimentService {
         this.experimentRepository = experimentRepository;
         this.experimentResultsRepository = experimentResultsRepository;
         this.experimentMapper = experimentMapper;
+    }
+
+    public Long createExperiment(ExperimentDTO experimentDTO) {
+        validateExperimentDTO(experimentDTO);
+        Long newExperimentID = saveNewRunningExperiment(experimentDTO);
+        List<AlgorithmProblemResult> results = new ArrayList<>();
+
+        createAndRunExperiment(newExperimentID)
+                .doOnNext(results::add)
+                .observeOn(Schedulers.io())
+                .doOnComplete(() -> saveExperimentResults(newExperimentID, results))
+                .doOnError(e -> updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
+                .subscribe();
+
+        return newExperimentID;
     }
 
     public Observable<AlgorithmProblemResult> createAndRunExperiment(Long ExperimentId) {

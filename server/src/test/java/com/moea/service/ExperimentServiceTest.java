@@ -29,6 +29,9 @@ public class ExperimentServiceTest {
     @Mock
     private ExperimentMapper experimentMapper;
 
+    @Mock
+    private ExperimentRunnerService experimentRunnerService;
+
     @InjectMocks
     private ExperimentService experimentService;
 
@@ -109,7 +112,7 @@ public class ExperimentServiceTest {
 
 
     @Test
-    void testSaveNewRunningExperiment_SampleOfExperimentData_ExpectedCorrectID() {
+    void testCreateExperiment_SampleOfExperimentData_ExpectedCorrectID() {
         // Given
         ExperimentDTO experimentDTO = ExperimentDTO.builder()
                 .evaluations(100)
@@ -118,19 +121,22 @@ public class ExperimentServiceTest {
                 .metrics(List.of("Hypervolume"))
                 .build();
         Experiment experiment = Experiment.builder()
-                .id(3L)
+                .id(1L)
                 .evaluations(100)
                 .status(ExperimentStatus.RUNNING)
                 .build();
         when(experimentMapper.fromDTO(experimentDTO)).thenReturn(experiment);
         when(experimentRepository.save(any(Experiment.class))).thenReturn(experiment);
+        when(experimentRunnerService.saveNewRunningExperiment(experimentDTO)).thenReturn(1L);
+        doNothing().when(experimentRunnerService).saveExperimentResults(any(Long.class), anyList());
+        when(experimentRepository.findById(1L)).thenReturn(Optional.ofNullable(experiment));
 
         // When
-        Long experimentId = experimentService.saveNewRunningExperiment(experimentDTO);
+        Long experimentId = experimentService.createExperiment(experimentDTO);
 
         // Then
         assertNotNull(experimentId);
-        assertEquals(3L, experimentId);
+        assertEquals(1L, experimentId);
     }
 
     @Test

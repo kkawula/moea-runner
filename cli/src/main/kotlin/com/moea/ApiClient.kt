@@ -1,39 +1,29 @@
 package com.moea
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.network.sockets.*
-import io.ktor.serialization.gson.*
-import kotlinx.coroutines.runBlocking
-import java.net.ConnectException
+import com.google.gson.GsonBuilder
+import com.google.gson.Strictness
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
-class ApiClient(private val baseUrl: String) {
-    private val client = HttpClient {
-        install(ContentNegotiation) {
-            gson()
-        }
+class ApiClient(baseUrl: String) {
+    private val apiService: ApiService
+
+    val gson = GsonBuilder()
+        .setStrictness(Strictness.LENIENT)
+        .create()
+
+    init {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+
+        apiService = retrofit.create(ApiService::class.java)
     }
 
-    suspend fun getExperimentList(): List<Experiment> {
-        return client.get("$baseUrl/experiments").body()
-    }
-
-    suspend fun getExperimentResults(id: Int): List<ExperimentResult> {
-        return client.get("$baseUrl/experiments/$id/results").body()
-    }
-
-    suspend fun getExperimentStatus(id: Int): String {
-        return client.get("$baseUrl/experiments/$id/status").body()
-    }
-
-    suspend fun createExperiment(experiment: NewExperiment): Int {
-        return client.post("$baseUrl/experiments") {
-            contentType(ContentType.Application.Json)
-            setBody(experiment)
-        }.body()
-    }
+    suspend fun getExperimentList() = apiService.getExperimentList()
+    suspend fun getExperimentResults(id: Int) = apiService.getExperimentResults(id)
+    suspend fun getExperimentStatus(id: Int) = apiService.getExperimentStatus(id)
+    suspend fun createExperiment(experiment: NewExperiment) = apiService.createExperiment(experiment)
 }

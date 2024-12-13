@@ -29,9 +29,13 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
     override fun run() = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
 
-        val experiments: List<Experiment> = apiClient.getExperimentList()
-        for (experiment in experiments) {
-            println(experiment.prettyRepr())
+        try {
+            val experiments: List<Experiment> = apiClient.getExperimentList()
+            for (experiment in experiments) {
+                println(experiment.prettyRepr())
+            }
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
         }
     }
 }
@@ -44,8 +48,12 @@ class GetExperimentResultsCommand : CliktCommand("experiment-results") {
     override fun run() = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
 
-        val experimentResults: List<ExperimentResult> = apiClient.getExperimentResults(id)
-        printFormattedResults(experimentResults)
+        try {
+            val experimentResults = apiClient.getExperimentResults(id)
+            printFormattedResults(experimentResults)
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
+        }
     }
 }
 
@@ -57,8 +65,12 @@ class GetExperimentStatusCommand : CliktCommand("experiment-status") {
     override fun run() = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
 
-        val experiment: String = apiClient.getExperimentStatus(id)
-        println("Experiment status: ${experiment}")
+        try {
+            val experiment: String = apiClient.getExperimentStatus(id)
+            println("Experiment status: ${experiment}")
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
+        }
     }
 }
 
@@ -80,8 +92,13 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
             metrics = metrics,
         )
 
-        val createdExperiment = apiClient.createExperiment(newExperiment)
-        println(createdExperiment)
+        try {
+            val experiment = apiClient.createExperiment(newExperiment)
+            println("Experiment created with id: $experiment")
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
+        }
+
     }
 }
 

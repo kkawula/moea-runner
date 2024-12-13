@@ -29,6 +29,9 @@ public class ExperimentServiceTest {
     @Mock
     private ExperimentMapper experimentMapper;
 
+    @Mock
+    private ExperimentRunnerService experimentRunnerService;
+
     @InjectMocks
     private ExperimentService experimentService;
 
@@ -55,8 +58,8 @@ public class ExperimentServiceTest {
     void testGetExperimentResults_Success() {
         // Given
         Experiment experiment = Experiment.builder().id(1L).evaluations(100).status(ExperimentStatus.RUNNING).build();
-        ExperimentResult result1 = ExperimentResult.builder().id(new ExperimentResultId(1L, "Hypervolume", 10)).result(0.5).build();
-        ExperimentResult result2 = ExperimentResult.builder().id(new ExperimentResultId(1L, "Hypervolume", 20)).result(0.6).build();
+        ExperimentResult result1 = ExperimentResult.builder().result(0.5).build();
+        ExperimentResult result2 = ExperimentResult.builder().result(0.6).build();
         List<ExperimentResult> results = List.of(result1, result2);
 
         when(experimentRepository.findById(1L)).thenReturn(Optional.of(experiment));
@@ -109,7 +112,7 @@ public class ExperimentServiceTest {
 
 
     @Test
-    void testSaveNewRunningExperiment_SampleOfExperimentData_ExpectedCorrectID() {
+    void testCreateExperiment_SampleOfExperimentData_ExpectedCorrectID() {
         // Given
         ExperimentDTO experimentDTO = ExperimentDTO.builder()
                 .evaluations(100)
@@ -118,19 +121,22 @@ public class ExperimentServiceTest {
                 .metrics(List.of("Hypervolume"))
                 .build();
         Experiment experiment = Experiment.builder()
-                .id(3L)
+                .id(1L)
                 .evaluations(100)
                 .status(ExperimentStatus.RUNNING)
                 .build();
         when(experimentMapper.fromDTO(experimentDTO)).thenReturn(experiment);
         when(experimentRepository.save(any(Experiment.class))).thenReturn(experiment);
+        when(experimentRunnerService.saveNewRunningExperiment(experimentDTO)).thenReturn(1L);
+        doNothing().when(experimentRunnerService).saveExperimentResults(any(Long.class), anyList());
+        when(experimentRepository.findById(1L)).thenReturn(Optional.ofNullable(experiment));
 
         // When
-        Long experimentId = experimentService.saveNewRunningExperiment(experimentDTO);
+        Long experimentId = experimentService.createExperiment(experimentDTO);
 
         // Then
         assertNotNull(experimentId);
-        assertEquals(3L, experimentId);
+        assertEquals(1L, experimentId);
     }
 
     @Test

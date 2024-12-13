@@ -94,15 +94,15 @@ public class ExperimentControllerTest {
                 """;
 
         //when
-        when(experimentService.saveNewRunningExperiment(experimentDTO)).thenReturn(1L);
+        when(experimentService.createExperiment(any(ExperimentDTO.class))).thenReturn(1L);
         doNothing().when(experimentService).validateExperimentDTO(any(ExperimentDTO.class));
-        when(experimentService.createAndRunExperiment(any(Long.class))).thenReturn(ob);
 
         //then
         mockMvc.perform(post("/experiments")
                         .contentType("application/json")
                         .content(requestBody))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string("1"));
     }
 
     @Test

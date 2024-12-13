@@ -1,19 +1,15 @@
 package com.moea.controller;
 
-import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
 import com.moea.dto.ExperimentResultDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
-import com.moea.dto.AlgorithmProblemResult;
 import com.moea.service.ExperimentService;
 
 import com.moea.util.ExperimentMapper;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -64,18 +60,7 @@ public class ExperimentController {
     @PostMapping()
     public Long createExperiment(@RequestBody ExperimentDTO experimentDTO) {
         try {
-            experimentService.validateExperimentDTO(experimentDTO);
-            Long newExperimentID = experimentService.saveNewRunningExperiment(experimentDTO);
-            List<AlgorithmProblemResult> results = new ArrayList<>();
-
-            experimentService.createAndRunExperiment(newExperimentID)
-                    .doOnNext(results::add)
-                    .observeOn(Schedulers.io())
-                    .doOnComplete(() -> experimentService.saveExperimentResults(newExperimentID, results))
-                    .doOnError(e -> experimentService.updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
-                    .subscribe();
-
-            return newExperimentID;
+            return experimentService.createExperiment(experimentDTO);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

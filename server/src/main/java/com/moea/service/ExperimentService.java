@@ -7,6 +7,7 @@ import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
+import com.moea.util.AlgorithmNames;
 import com.moea.util.ExperimentMapper;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -117,7 +118,13 @@ public class ExperimentService {
             }
         }
 
-        //TODO: Check if the selected algorithms are valid
+        Set<String> validAlgorithms = Arrays.stream(AlgorithmNames.values()).map(AlgorithmNames::toString).collect(Collectors.toSet());
+
+        for (String algorithm : experimentDTO.getAlgorithms()) {
+            if (!validAlgorithms.contains(algorithm)) {
+                throw new IllegalArgumentException("Invalid algorithm: " + algorithm);
+            }
+        }
     }
 
     @Transactional

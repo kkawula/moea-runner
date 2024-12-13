@@ -69,7 +69,7 @@ public class ExperimentControllerTest {
         ExperimentDTO experimentDTO = ExperimentDTO.builder()
                 .evaluations(10)
                 .algorithms(List.of("NSGAII", "GDE3"))
-                .problems(List.of("UF1", "DTLZ2"))
+                .problems(List.of("UF1", "DTLZ2_2"))
                 .metrics(List.of("Hypervolume", "Spacing"))
                 .build();
 
@@ -84,7 +84,7 @@ public class ExperimentControllerTest {
                   ],
                   "problems": [
                     "UF1",
-                    "DTLZ2"
+                    "DTLZ2_2"
                   ],
                   "metrics": [
                     "Hypervolume",

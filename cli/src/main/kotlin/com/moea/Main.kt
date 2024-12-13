@@ -36,6 +36,8 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
             }
         } catch (e: Exception) {
             println("Error: ${e.message}")
+        } finally {
+            apiClient.close()
         }
     }
 }
@@ -53,6 +55,8 @@ class GetExperimentResultsCommand : CliktCommand("experiment-results") {
             printFormattedResults(experimentResults)
         } catch (e: Exception) {
             println("Error: ${e.message}")
+        } finally {
+            apiClient.close()
         }
     }
 }
@@ -70,6 +74,8 @@ class GetExperimentStatusCommand : CliktCommand("experiment-status") {
             println("Experiment status: ${experiment}")
         } catch (e: Exception) {
             println("Error: ${e.message}")
+        } finally {
+            apiClient.close()
         }
     }
 }
@@ -96,9 +102,11 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
             val experiment = apiClient.createExperiment(newExperiment)
             println("Experiment created with id: $experiment")
         } catch (e: Exception) {
+            println(e)
             println("Error: ${e.message}")
+        } finally {
+            apiClient.close()
         }
-
     }
 }
 

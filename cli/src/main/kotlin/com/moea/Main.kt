@@ -102,7 +102,6 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
             val experiment = apiClient.createExperiment(newExperiment)
             println("Experiment created with id: $experiment")
         } catch (e: Exception) {
-            println(e)
             println("Error: ${e.message}")
         } finally {
             apiClient.close()

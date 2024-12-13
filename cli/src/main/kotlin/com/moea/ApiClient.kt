@@ -18,15 +18,6 @@ class ApiClient(private val baseUrl: String) {
         }
     }
 
-    fun checkHostAlive(): Boolean = runBlocking {
-        try {
-            val response = client.get(baseUrl)
-            response.status.value in 200..299
-        } catch (e: Exception) {
-            false
-        }
-    }
-
     suspend fun getExperimentList(): List<Experiment> {
         return client.get("$baseUrl/experiments").body()
     }

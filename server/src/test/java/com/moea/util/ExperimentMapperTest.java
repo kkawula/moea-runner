@@ -29,7 +29,7 @@ class ExperimentMapperTest {
                 ))
                 .problems(List.of(
                         Problem.builder().problemName("UF1").build(),
-                        Problem.builder().problemName("DTLZ2").build()
+                        Problem.builder().problemName("DTLZ2_2").build()
                 ))
                 .metrics(List.of(
                         ExperimentMetric.builder().metricName("Hypervolume").build(),
@@ -46,7 +46,7 @@ class ExperimentMapperTest {
         assertEquals(100, experimentDTO.getEvaluations());
         assertEquals("RUNNING", experimentDTO.getStatus());
         assertEquals(List.of("NSGAII", "GDE3"), experimentDTO.getAlgorithms());
-        assertEquals(List.of("UF1", "DTLZ2"), experimentDTO.getProblems());
+        assertEquals(List.of("UF1", "DTLZ2_2"), experimentDTO.getProblems());
         assertEquals(List.of("Hypervolume", "Spacing"), experimentDTO.getMetrics());
     }
 
@@ -58,7 +58,7 @@ class ExperimentMapperTest {
                 .evaluations(100)
                 .status("RUNNING")
                 .algorithms(List.of("NSGAII", "GDE3"))
-                .problems(List.of("UF1", "DTLZ2"))
+                .problems(List.of("UF1", "DTLZ2_2"))
                 .metrics(List.of("Hypervolume", "Spacing"))
                 .build();
 
@@ -75,7 +75,7 @@ class ExperimentMapperTest {
         assertEquals("GDE3", experiment.getAlgorithms().get(1).getAlgorithmName());
         assertEquals(2, experiment.getProblems().size());
         assertEquals("UF1", experiment.getProblems().get(0).getProblemName());
-        assertEquals("DTLZ2", experiment.getProblems().get(1).getProblemName());
+        assertEquals("DTLZ2_2", experiment.getProblems().get(1).getProblemName());
         assertEquals(2, experiment.getMetrics().size());
         assertEquals("Hypervolume", experiment.getMetrics().get(0).getMetricName());
         assertEquals("Spacing", experiment.getMetrics().get(1).getMetricName());

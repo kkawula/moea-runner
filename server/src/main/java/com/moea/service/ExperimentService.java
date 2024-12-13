@@ -140,10 +140,7 @@ public class ExperimentService {
         for (AlgorithmProblemResult result : results) {
             for (Observation row : result.getObservations()) {
                 for (String metric : metricsToSave) {
-                    ExperimentResultId id = new ExperimentResultId(experimentId, metric, row.getNFE());
-
                     ExperimentResult experimentResult = ExperimentResult.builder()
-                            .id(id)
                             .experiment(experiment)
                             .problem(result.getProblemName())
                             .algorithm(result.getAlgorithmName())

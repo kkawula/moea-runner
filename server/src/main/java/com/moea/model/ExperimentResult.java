@@ -14,11 +14,12 @@ import java.util.Objects;
 @NoArgsConstructor
 public class ExperimentResult {
 
-    @EmbeddedId
-    private ExperimentResultId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("experimentId")
+    @JoinColumn(name = "experiment_id", nullable = false)
     private Experiment experiment;
 
     @Column(name = "problem")
@@ -27,10 +28,10 @@ public class ExperimentResult {
     @Column(name = "algorithm")
     private String algorithm;
 
-    @Column(name = "metric", insertable = false, updatable = false)
+    @Column(name = "metric")
     private String metric;
 
-    @Column(name = "iteration", insertable = false, updatable = false)
+    @Column(name = "iteration")
     private int iteration;
 
     @Column(name = "result")

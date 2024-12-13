@@ -55,8 +55,8 @@ public class ExperimentServiceTest {
     void testGetExperimentResults_Success() {
         // Given
         Experiment experiment = Experiment.builder().id(1L).evaluations(100).status(ExperimentStatus.RUNNING).build();
-        ExperimentResult result1 = ExperimentResult.builder().id(new ExperimentResultId(1L, "Hypervolume", 10)).result(0.5).build();
-        ExperimentResult result2 = ExperimentResult.builder().id(new ExperimentResultId(1L, "Hypervolume", 20)).result(0.6).build();
+        ExperimentResult result1 = ExperimentResult.builder().result(0.5).build();
+        ExperimentResult result2 = ExperimentResult.builder().result(0.6).build();
         List<ExperimentResult> results = List.of(result1, result2);
 
         when(experimentRepository.findById(1L)).thenReturn(Optional.of(experiment));

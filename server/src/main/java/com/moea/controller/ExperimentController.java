@@ -60,18 +60,7 @@ public class ExperimentController {
     @PostMapping()
     public Long createExperiment(@RequestBody ExperimentDTO experimentDTO) {
         try {
-            experimentService.validateExperimentDTO(experimentDTO);
-            Long newExperimentID = experimentService.saveNewRunningExperiment(experimentDTO);
-            List<AlgorithmProblemResult> results = new ArrayList<>();
-
-            experimentService.createAndRunExperiment(newExperimentID)
-                    .doOnNext(results::add)
-                    .observeOn(Schedulers.io())
-                    .doOnComplete(() -> experimentService.saveExperimentResults(newExperimentID, results))
-                    .doOnError(e -> experimentService.updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
-                    .subscribe();
-
-            return newExperimentID;
+            return experimentService.createExperiment(experimentDTO);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

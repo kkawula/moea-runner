@@ -8,10 +8,9 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.int
 import kotlinx.coroutines.runBlocking
+import com.moea.common.BASE_URL
+import com.moea.common.CommonArgs
 
-const val BASE_URL = "http://localhost:8080"
-
-data class CommonArgs(var url: String = BASE_URL)
 
 class MainApp : CliktCommand("CLI for interacting with the MOEA Framework Server") {
     override val printHelpOnEmptyArgs = true

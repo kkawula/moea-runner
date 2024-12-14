@@ -34,7 +34,7 @@ public class ExperimentService {
     }
 
     public Long createExperiment(ExperimentDTO experimentDTO) {
-        validateExperimentDTO(experimentDTO);
+        experimentValidator.validate(experimentDTO);
         Long newExperimentID = experimentRunnerService.saveNewRunningExperiment(experimentDTO);
         List<AlgorithmProblemResult> results = new ArrayList<>();
 
@@ -99,10 +99,6 @@ public class ExperimentService {
     public ExperimentStatus getExperimentStatus(String id) {
         return experimentRepository.findById(Long.valueOf(id)).map(Experiment::getStatus)
                 .orElseThrow(ExperimentNotFoundException::new);
-    }
-
-    public void validateExperimentDTO(ExperimentDTO experimentDTO) {
-        experimentValidator.validate(experimentDTO);
     }
 
     public void updateExperimentStatus(Long experimentId, ExperimentStatus status) {

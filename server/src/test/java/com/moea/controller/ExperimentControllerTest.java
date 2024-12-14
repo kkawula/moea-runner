@@ -95,7 +95,6 @@ public class ExperimentControllerTest {
 
         //when
         when(experimentService.createExperiment(any(ExperimentDTO.class))).thenReturn(1L);
-        doNothing().when(experimentService).validateExperimentDTO(any(ExperimentDTO.class));
 
         //then
         mockMvc.perform(post("/experiments")

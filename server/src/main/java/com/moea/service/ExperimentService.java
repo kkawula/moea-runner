@@ -61,6 +61,10 @@ public class ExperimentService {
                 for (Problem problem : experiment.getProblems()) {
                     Instrumenter instrumenter;
                     for (Algorithm algorithm : experiment.getAlgorithms()) {
+                        if (observer.isDisposed()) {
+                            break;
+                        }
+
                         instrumenter = new Instrumenter()
                                 .withProblem(problem.getProblemName())
                                 .attachAllMetricCollectors();

@@ -7,25 +7,17 @@ import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
-import com.moea.util.AlgorithmNames;
 import com.moea.util.ExperimentValidator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
-import org.moeaframework.core.indicator.StandardIndicator;
-import org.moeaframework.core.spi.ProblemFactory;
-import org.moeaframework.core.spi.ProblemProvider;
 import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import static org.moeaframework.core.Settings.getDiagnosticToolProblems;
 
 @Service
 public class ExperimentService {

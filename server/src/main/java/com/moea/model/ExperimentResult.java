@@ -3,8 +3,6 @@ package com.moea.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Objects;
-
 @Entity
 @Setter
 @Getter

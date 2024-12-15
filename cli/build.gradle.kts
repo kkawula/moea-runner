@@ -13,20 +13,22 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
     implementation("com.github.ajalt.clikt:clikt:5.0.2")
     implementation("io.ktor:ktor-client-core:3.0.2")
     implementation("io.ktor:ktor-client-cio:3.0.2")
     implementation("io.ktor:ktor-client-content-negotiation:3.0.2")
     implementation("io.ktor:ktor-serialization-gson:3.0.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("org.slf4j:slf4j-simple:2.0.16")
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.11.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("junit:junit:4.13.2")
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnit()
 }
 
 kotlin {

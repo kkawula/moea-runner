@@ -3,20 +3,22 @@ package com.moea.service;
 import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
-import com.moea.model.*;
+import com.moea.model.Experiment;
+import com.moea.model.ExperimentResult;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
 import com.moea.util.ExperimentMapper;
 import com.moea.util.ExperimentValidator;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class ExperimentServiceTest {

@@ -1,6 +1,6 @@
 package com.moea
 
-data class ExperimentResult (
+data class ExperimentResult(
     val problem: String,
     val algorithm: String,
     val metric: String,
@@ -8,7 +8,7 @@ data class ExperimentResult (
     val result: Double,
 )
 
-data class NewExperiment (
+data class NewExperiment(
     val evaluations: Int,
     val algorithms: List<String>,
     val problems: List<String>,

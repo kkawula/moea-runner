@@ -19,11 +19,13 @@ class ApiClient(baseUrl: String = BASE_URL) {
     private val retrofit = Retrofit.Builder()
         .baseUrl(baseUrl)
         .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create(
-            GsonBuilder()
-                .setStrictness(Strictness.LENIENT)
-                .create()
-        ))
+        .addConverterFactory(
+            GsonConverterFactory.create(
+                GsonBuilder()
+                    .setStrictness(Strictness.LENIENT)
+                    .create()
+            )
+        )
         .build()
 
     val apiService: ApiService = retrofit.create(ApiService::class.java)

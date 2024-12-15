@@ -19,21 +19,21 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 public class ExperimentControllerTest {
 
-    private MockMvc mockMvc;
     @Mock
     ExperimentService experimentService;
     @Mock
     ExperimentMapper experimentMapper;
     @InjectMocks
     ExperimentController controllerUnderTest;
+    private MockMvc mockMvc;
 
     @BeforeEach
     public void setup() {

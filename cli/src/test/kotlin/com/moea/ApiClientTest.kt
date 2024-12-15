@@ -79,7 +79,7 @@ class ApiClientTest : BaseTest() {
     }
 
     @Test
-    fun `test getExperimentResults`(){
+    fun `test getExperimentResults`() {
         val responseBody = """
             [
                 {

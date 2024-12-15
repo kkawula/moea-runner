@@ -2,43 +2,33 @@ package com.moea.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.requireObject
-import com.github.ajalt.clikt.parameters.options.split
-import com.github.ajalt.clikt.parameters.types.int
-import com.google.gson.Gson
-import com.moea.helpers.ApiErrorResponse
-import kotlinx.coroutines.runBlocking
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.moea.*
+import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.types.int
+import com.moea.ApiClient
+import com.moea.NewExperiment
 import com.moea.helpers.CommonArgs
+import com.moea.helpers.prettyRepr
+import com.moea.helpers.printFormattedResults
+import com.moea.helpers.sendRequest
+import kotlinx.coroutines.runBlocking
 
 class ListExperimentsCommand : CliktCommand("experiments-list") {
     private val commonArgs by requireObject<CommonArgs>()
 
-    override fun run() = runBlocking {
+    override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
-
         try {
-            val experiments: List<Experiment> = apiClient.getExperimentList()
-            for (experiment in experiments) {
-                println(experiment.prettyRepr())
+            val result = sendRequest(apiClient) { client ->
+                client.getExperimentList()
             }
-        } catch (e: retrofit2.HttpException) {
-            val errorBody = e.response()?.errorBody()?.string()
-            if (!errorBody.isNullOrEmpty()) {
-                try {
-                    val apiError = Gson().fromJson(errorBody, ApiErrorResponse::class.java)
-                    println("Error message: ${apiError.message}")
-                } catch (jsonException: Exception) {
-                    println("Failed to parse error body: ${jsonException.message}")
-                    println("Raw error body: $errorBody")
+            result.onSuccess { experiments ->
+                experiments.forEach {
+                    println(it.prettyRepr())
                 }
-            } else {
-                println("Empty error body. HTTP Code: ${e.code()}")
             }
-        } catch (e: Exception) {
-            println("Error: ${e.message}")
         } finally {
             apiClient.close()
         }
@@ -48,29 +38,18 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
 class GetExperimentResultsCommand : CliktCommand("experiment-results") {
     private val commonArgs by requireObject<CommonArgs>()
 
-    val id by argument().int()
+    private val id by argument().int()
 
-    override fun run() = runBlocking {
+    override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
 
         try {
-            val experimentResults = apiClient.getExperimentResults(id)
-            printFormattedResults(experimentResults)
-        } catch (e: retrofit2.HttpException) {
-            val errorBody = e.response()?.errorBody()?.string()
-            if (!errorBody.isNullOrEmpty()) {
-                try {
-                    val apiError = Gson().fromJson(errorBody, ApiErrorResponse::class.java)
-                    println("Error message: ${apiError.message}")
-                } catch (jsonException: Exception) {
-                    println("Failed to parse error body: ${jsonException.message}")
-                    println("Raw error body: $errorBody")
-                }
-            } else {
-                println("Empty error body. HTTP Code: ${e.code()}")
+            val result = sendRequest(apiClient) { client ->
+                client.getExperimentResults(id)
             }
-        } catch (e: Exception) {
-            println("Error: ${e.message}")
+            result.onSuccess { results ->
+                printFormattedResults(results)
+            }
         } finally {
             apiClient.close()
         }
@@ -80,29 +59,18 @@ class GetExperimentResultsCommand : CliktCommand("experiment-results") {
 class GetExperimentStatusCommand : CliktCommand("experiment-status") {
     private val commonArgs by requireObject<CommonArgs>()
 
-    val id by argument().int()
+    private val id by argument().int()
 
-    override fun run() = runBlocking {
+    override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
 
         try {
-            val experiment: String = apiClient.getExperimentStatus(id)
-            println("Experiment status: ${experiment}")
-        } catch (e: retrofit2.HttpException) {
-            val errorBody = e.response()?.errorBody()?.string()
-            if (!errorBody.isNullOrEmpty()) {
-                try {
-                    val apiError = Gson().fromJson(errorBody, ApiErrorResponse::class.java)
-                    println("Error message: ${apiError.message}")
-                } catch (jsonException: Exception) {
-                    println("Failed to parse error body: ${jsonException.message}")
-                    println("Raw error body: $errorBody")
-                }
-            } else {
-                println("Empty error body. HTTP Code: ${e.code()}")
+            val result = sendRequest(apiClient) { client ->
+                client.getExperimentStatus(id)
             }
-        } catch (e: Exception) {
-            println("Error: ${e.message}")
+            result.onSuccess { status ->
+                println("Experiment $id status: $status")
+            }
         } finally {
             apiClient.close()
         }
@@ -112,12 +80,12 @@ class GetExperimentStatusCommand : CliktCommand("experiment-status") {
 class CreateExperimentCommand : CliktCommand("experiment-create") {
     private val commonArgs by requireObject<CommonArgs>()
 
-    val evaluations by option("--evaluations", help = "Number of evaluations").int().required()
-    val algorithms by option("--algorithms", help = "Comma-separated list of algorithms").split(",").required()
-    val problems by option("--problems", help = "Comma-separated list of problems").split(",").required()
-    val metrics by option("--metrics", help = "Comma-separated list of metrics").split(",").required()
+    private val evaluations by option("--evaluations", help = "Number of evaluations").int().required()
+    private val algorithms by option("--algorithms", help = "Comma-separated list of algorithms").split(",").required()
+    private val problems by option("--problems", help = "Comma-separated list of problems").split(",").required()
+    private val metrics by option("--metrics", help = "Comma-separated list of metrics").split(",").required()
 
-    override fun run() = runBlocking {
+    override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
 
         val newExperiment = NewExperiment(
@@ -128,26 +96,14 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
         )
 
         try {
-            val experiment = apiClient.createExperiment(newExperiment)
-            println("Experiment created with id: $experiment")
-        } catch (e: retrofit2.HttpException) {
-            val errorBody = e.response()?.errorBody()?.string()
-            if (!errorBody.isNullOrEmpty()) {
-                try {
-                    val apiError = Gson().fromJson(errorBody, ApiErrorResponse::class.java)
-                    println("Error message: ${apiError.message}")
-                } catch (jsonException: Exception) {
-                    println("Failed to parse error body: ${jsonException.message}")
-                    println("Raw error body: $errorBody")
-                }
-            } else {
-                println("Empty error body. HTTP Code: ${e.code()}")
+            val result = sendRequest(apiClient) { client ->
+                client.createExperiment(newExperiment)
             }
-        } catch (e: Exception) {
-            println("Error: ${e.message}")
+            result.onSuccess { experiment ->
+                println("Experiment created with id: $experiment")
+            }
         } finally {
             apiClient.close()
         }
-
     }
 }

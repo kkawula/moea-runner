@@ -2,13 +2,14 @@ package com.moea
 
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
+import com.moea.helpers.BASE_URL
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 
-class ApiClient(baseUrl: String) {
+class ApiClient(baseUrl: String = BASE_URL) {
     val okHttpClient: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
@@ -18,11 +19,13 @@ class ApiClient(baseUrl: String) {
     private val retrofit = Retrofit.Builder()
         .baseUrl(baseUrl)
         .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create(
-            GsonBuilder()
-                .setStrictness(Strictness.LENIENT)
-                .create()
-        ))
+        .addConverterFactory(
+            GsonConverterFactory.create(
+                GsonBuilder()
+                    .setStrictness(Strictness.LENIENT)
+                    .create()
+            )
+        )
         .build()
 
     val apiService: ApiService = retrofit.create(ApiService::class.java)

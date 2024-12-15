@@ -7,6 +7,7 @@ import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
 import com.moea.util.ExperimentMapper;
+import com.moea.util.ExperimentValidator;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +32,9 @@ public class ExperimentServiceTest {
 
     @Mock
     private ExperimentRunnerService experimentRunnerService;
+
+    @Mock
+    private ExperimentValidator experimentValidator;
 
     @InjectMocks
     private ExperimentService experimentService;

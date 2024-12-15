@@ -1,18 +1,19 @@
 package com.moea
 
+import com.moea.helpers.BASE_URL
 import com.moea.helpers.prettyRepr
 import com.moea.helpers.printFormattedResults
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 
-class TestConverting {
+class Runner {
 
     private lateinit var apiClient: ApiClient
 
     @BeforeEach
     fun setUp() {
-        apiClient = ApiClient("http://localhost:8080")
+        apiClient = ApiClient(BASE_URL)
     }
 
     @Test

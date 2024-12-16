@@ -94,13 +94,13 @@ public class ExperimentService {
         return experimentRepository.findAll();
     }
 
-    public List<ExperimentResult> getExperimentResults(String id) {
-        experimentRepository.findById(Long.valueOf(id)).orElseThrow(ExperimentNotFoundException::new);
-        return experimentResultsRepository.getResults(id);
+    public List<ExperimentResult> getExperimentResults(Long id) {
+        experimentRepository.findById(id).orElseThrow(ExperimentNotFoundException::new);
+        return experimentResultsRepository.findByExperimentId(id);
     }
 
-    public ExperimentStatus getExperimentStatus(String id) {
-        return experimentRepository.findById(Long.valueOf(id)).map(Experiment::getStatus)
+    public ExperimentStatus getExperimentStatus(Long id) {
+        return experimentRepository.findById(id).map(Experiment::getStatus)
                 .orElseThrow(ExperimentNotFoundException::new);
     }
 

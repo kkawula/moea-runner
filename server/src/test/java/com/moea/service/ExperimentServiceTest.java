@@ -69,10 +69,10 @@ public class ExperimentServiceTest {
         List<ExperimentResult> results = List.of(result1, result2);
 
         when(experimentRepository.findById(1L)).thenReturn(Optional.of(experiment));
-        when(experimentResultsRepository.getResults("1")).thenReturn(results);
+        when(experimentResultsRepository.findByExperimentId(1L)).thenReturn(results);
 
         // When
-        List<ExperimentResult> result = experimentService.getExperimentResults("1");
+        List<ExperimentResult> result = experimentService.getExperimentResults(1L);
 
         // Then
         assertNotNull(result);
@@ -84,7 +84,7 @@ public class ExperimentServiceTest {
     @Test
     void testGetExperimentResults_ExperimentNotFound() {
         // Given
-        String experimentId = "1";
+        Long experimentId = 1L;
 
         when(experimentRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -100,7 +100,7 @@ public class ExperimentServiceTest {
         when(experimentRepository.findById(1L)).thenReturn(Optional.of(experiment));
 
         // When
-        ExperimentStatus status = experimentService.getExperimentStatus("1");
+        ExperimentStatus status = experimentService.getExperimentStatus(1L);
 
         // Then
         assertNotNull(status);
@@ -113,7 +113,7 @@ public class ExperimentServiceTest {
         when(experimentRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Then
-        assertThrows(ExperimentNotFoundException.class, () -> experimentService.getExperimentStatus("1"));
+        assertThrows(ExperimentNotFoundException.class, () -> experimentService.getExperimentStatus(1L));
     }
 
 

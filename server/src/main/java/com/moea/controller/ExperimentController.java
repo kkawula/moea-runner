@@ -30,7 +30,7 @@ public class ExperimentController {
     }
 
     @GetMapping("/{id}/results")
-    public List<ExperimentResultDTO> getExperimentResults(@PathVariable String id) {
+    public List<ExperimentResultDTO> getExperimentResults(@PathVariable Long id) {
         try {
             return experimentService.getExperimentResults(id).stream()
                     .map(result -> ExperimentResultDTO.builder()
@@ -48,7 +48,7 @@ public class ExperimentController {
     }
 
     @GetMapping("/{id}/status")
-    public String getExperimentStatus(@PathVariable String id) {
+    public String getExperimentStatus(@PathVariable Long id) {
         try {
             return experimentService.getExperimentStatus(id).name();
         } catch (ExperimentNotFoundException e) {

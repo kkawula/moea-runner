@@ -110,7 +110,7 @@ public class ExperimentControllerTest {
         List<ExperimentResult> experimentResults = List.of(new ExperimentResult());
 
         //when
-        when(experimentService.getExperimentResults("1")).thenReturn(experimentResults);
+        when(experimentService.getExperimentResults(1L)).thenReturn(experimentResults);
 
         //then
         mockMvc.perform(get("/experiments/1/results"))
@@ -122,7 +122,7 @@ public class ExperimentControllerTest {
     @Test
     public void testGetExperimentStatus_SampleDataOfExperimentStatus_ExpectedRunningStatusInResponse() throws Exception {
         //when
-        when(experimentService.getExperimentStatus("1")).thenReturn(ExperimentStatus.RUNNING);
+        when(experimentService.getExperimentStatus(1L)).thenReturn(ExperimentStatus.RUNNING);
 
         //then
         mockMvc.perform(get("/experiments/1/status"))

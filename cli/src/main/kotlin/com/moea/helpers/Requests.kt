@@ -45,5 +45,4 @@ fun handleHttpException(e: HttpException) {
 
 fun handleGenericException(e: Exception) {
     println("Error: ${e.message}")
-    e.printStackTrace()
 }

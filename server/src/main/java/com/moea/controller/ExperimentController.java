@@ -31,6 +31,13 @@ public class ExperimentController {
                 .toList();
     }
 
+    @GetMapping("/unique")
+    public List<ExperimentDTO> getUniqueExperiments() {
+        return experimentService.getUniqueExperiments().stream()
+                .map(experimentMapper::toDTO)
+                .toList();
+    }
+
     @GetMapping("/{id}/results")
     public List<ExperimentResultDTO> getExperimentResults(@PathVariable Long id) {
         try {

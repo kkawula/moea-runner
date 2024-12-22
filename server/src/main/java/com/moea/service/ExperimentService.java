@@ -103,6 +103,10 @@ public class ExperimentService {
         return experimentRepository.findAll();
     }
 
+    public List<Experiment> getUniqueExperiments() {
+        return experimentRepository.findDistinctByGroupId(List.of());
+    }
+
     public List<ExperimentResult> getExperimentResults(Long id) {
         experimentRepository.findById(id).orElseThrow(ExperimentNotFoundException::new);
         return experimentResultsRepository.findByExperimentId(id);

@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/experiments")
@@ -57,9 +59,19 @@ public class ExperimentController {
     }
 
     @PostMapping()
-    public Long createExperiment(@RequestBody ExperimentDTO experimentDTO) {
+    public List<Long> createExperiment(@RequestBody ExperimentDTO experimentDTO, @RequestParam(required = false) Integer invocations) {
         try {
-            return experimentService.createExperiment(experimentDTO);
+            List<Long> experimentIds = new ArrayList<>();
+            UUID groupId = UUID.randomUUID();
+            experimentDTO.setGroupId(groupId);
+            if (invocations == null) {
+                experimentIds.add(experimentService.createExperiment(experimentDTO));
+            } else {
+                for (int i = 0; i < invocations; i++) {
+                    experimentIds.add(experimentService.createExperiment(experimentDTO));
+                }
+            }
+            return experimentIds;
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

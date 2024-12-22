@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Setter
@@ -19,12 +21,21 @@ public class Experiment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "group_id")
+    private UUID groupId;
+
     @Column(name = "evaluations")
     private int evaluations;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ExperimentStatus status;
+
+    @Column(name = "start_date")
+    private Date startDate;
+
+    @Column(name = "end_date")
+    private Date endDate;
 
     @OneToMany(
             mappedBy = "experiment",

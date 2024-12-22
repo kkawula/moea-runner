@@ -10,6 +10,7 @@ import com.moea.model.ExperimentResult;
 import com.moea.model.Problem;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
+import com.moea.specifications.ExperimentSpecifications;
 import com.moea.util.ExperimentMapper;
 import com.moea.util.ExperimentValidator;
 import io.reactivex.rxjava3.core.Observable;
@@ -17,9 +18,11 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
 import org.moeaframework.core.spi.ProviderNotFoundException;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -30,13 +33,15 @@ public class ExperimentService {
     private final ExperimentRunnerService experimentRunnerService;
     private final ExperimentValidator experimentValidator;
     private final ExperimentMapper experimentMapper;
+    private final ExperimentSpecifications experimentSpecifications;
 
-    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper) {
+    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications) {
         this.experimentRepository = experimentRepository;
         this.experimentResultsRepository = experimentResultsRepository;
         this.experimentRunnerService = experimentRunnerService;
         this.experimentValidator = experimentValidator;
         this.experimentMapper = experimentMapper;
+        this.experimentSpecifications = experimentSpecifications;
     }
 
     public Long createExperiment(ExperimentDTO experimentDTO) {
@@ -99,8 +104,13 @@ public class ExperimentService {
         }).subscribeOn(Schedulers.computation());
     }
 
-    public List<Experiment> getExperiments() {
-        return experimentRepository.findAll();
+    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, Date fromDate, Date toDate) {
+        Specification<Experiment> spec = Specification.where(experimentSpecifications.withAlgorithm(algorithmName))
+                .and(experimentSpecifications.withProblem(problemName))
+                .and(experimentSpecifications.withStatus(status))
+                .and(experimentSpecifications.withinDateRange(fromDate, toDate));
+
+        return experimentRepository.findAll(spec);
     }
 
     public List<Experiment> getUniqueExperiments() {

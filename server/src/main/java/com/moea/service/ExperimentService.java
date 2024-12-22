@@ -10,6 +10,7 @@ import com.moea.model.ExperimentResult;
 import com.moea.model.Problem;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
+import com.moea.util.ExperimentMapper;
 import com.moea.util.ExperimentValidator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -28,12 +29,14 @@ public class ExperimentService {
     private final ExperimentResultsRepository experimentResultsRepository;
     private final ExperimentRunnerService experimentRunnerService;
     private final ExperimentValidator experimentValidator;
+    private final ExperimentMapper experimentMapper;
 
-    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator) {
+    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper) {
         this.experimentRepository = experimentRepository;
         this.experimentResultsRepository = experimentResultsRepository;
         this.experimentRunnerService = experimentRunnerService;
         this.experimentValidator = experimentValidator;
+        this.experimentMapper = experimentMapper;
     }
 
     public Long createExperiment(ExperimentDTO experimentDTO) {
@@ -49,6 +52,12 @@ public class ExperimentService {
                 .subscribe();
 
         return newExperimentID;
+    }
+
+    public Long repeatExperiment(Long id) {
+        Experiment experiment = experimentRepository.findById(id).orElseThrow(ExperimentNotFoundException::new);
+        ExperimentDTO experimentDTO = experimentMapper.toRequestDTO(experiment);
+        return createExperiment(experimentDTO);
     }
 
     private Observable<AlgorithmProblemResult> createAndRunExperiment(Long ExperimentId) {

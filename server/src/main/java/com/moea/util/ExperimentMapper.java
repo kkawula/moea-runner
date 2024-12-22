@@ -35,6 +35,25 @@ public class ExperimentMapper {
                 .build();
     }
 
+    public ExperimentDTO toRequestDTO(Experiment experiment) {
+        return ExperimentDTO.builder()
+                .groupId(experiment.getGroupId())
+                .evaluations(experiment.getEvaluations())
+                .algorithms(experiment.getAlgorithms().stream()
+                        .map(Algorithm::getAlgorithmName)
+                        .toList()
+                )
+                .problems(experiment.getProblems().stream()
+                        .map(Problem::getProblemName)
+                        .toList()
+                )
+                .metrics(experiment.getMetrics().stream()
+                        .map(ExperimentMetric::getMetricName)
+                        .toList()
+                )
+                .build();
+    }
+
     public Experiment fromDTO(ExperimentDTO experimentDTO) {
         Experiment experiment = Experiment.builder()
                 .id(experimentDTO.getId())

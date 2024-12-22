@@ -76,4 +76,21 @@ public class ExperimentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
+
+    @PostMapping("/{id}/repeat")
+    public List<Long> repeatExperiment(@PathVariable Long id, @RequestParam(required = false) Integer invocations) {
+        try {
+            List<Long> experimentIds = new ArrayList<>();
+            if (invocations == null) {
+                experimentIds.add(experimentService.repeatExperiment(id));
+            } else {
+                for (int i = 0; i < invocations; i++) {
+                    experimentIds.add(experimentService.repeatExperiment(id));
+                }
+            }
+            return experimentIds;
+        } catch (ExperimentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
 }

@@ -120,7 +120,6 @@ public class ExperimentService {
         return experimentResultsRepository.findByExperimentId(id);
     }
 
-    // TODO: Refactor this bs
     public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds) {
         List<Experiment> experiments = experimentRepository.findAllById(experimentIds);
 
@@ -128,43 +127,7 @@ public class ExperimentService {
             throw new ExperimentNotFoundException();
         }
 
-        int iterations = experiments.stream()
-                .map(Experiment::getEvaluations)
-                .reduce(Integer::min)
-                .orElse(0);
-
-        List<Problem> commonProblems = experiments.stream()
-                .map(Experiment::getProblems)
-                .flatMap(Collection::stream)
-                .map(Problem::getProblemName)
-                .distinct()
-                .map(problemName -> experiments.getFirst().getProblems().stream()
-                        .filter(p -> p.getProblemName().equals(problemName))
-                        .findFirst().orElseThrow())
-                .toList();
-
-        List<Algorithm> commonAlgorithms = experiments.stream()
-                .map(Experiment::getAlgorithms)
-                .flatMap(Collection::stream)
-                .map(Algorithm::getAlgorithmName)
-                .distinct()
-                .map(algorithmName -> experiments.getFirst().getAlgorithms().stream()
-                        .filter(a -> a.getAlgorithmName().equals(algorithmName))
-                        .findFirst().orElseThrow())
-                .toList();
-
-        List<ExperimentMetric> commonMetrics = experiments.stream()
-                .map(Experiment::getMetrics)
-                .flatMap(Collection::stream)
-                .map(ExperimentMetric::getMetricName)
-                .distinct()
-                .map(metricName -> experiments.getFirst().getMetrics().stream()
-                        .filter(m -> m.getMetricName().equals(metricName))
-                        .findFirst().orElseThrow())
-                .toList();
-
-
-        List<AggregatedExperimentResultDTO> results = new ArrayList<>();
+        CommonAttributes commonAttributes = getCommonAttributes(experiments);
 
         Map<Long, List<ExperimentResult>> experimentsResults = new HashMap<>();
 
@@ -173,10 +136,16 @@ public class ExperimentService {
             experimentsResults.put(experiment.getId(), experimentResults);
         }
 
-        for (Problem problem : commonProblems) {
-            for (Algorithm algorithm : commonAlgorithms) {
-                for (ExperimentMetric metric : commonMetrics) {
-                    for (int iteration = ITERATION_INTERVAL; iteration <= iterations; iteration += ITERATION_INTERVAL) {
+        return combineResults(commonAttributes, experiments, experimentsResults);
+    }
+
+    private List<AggregatedExperimentResultDTO> combineResults(CommonAttributes commonAttributes, List<Experiment> experiments, Map<Long, List<ExperimentResult>> experimentsResults) {
+        List<AggregatedExperimentResultDTO> results = new ArrayList<>();
+
+        for (Problem problem : commonAttributes.problems()) {
+            for (Algorithm algorithm : commonAttributes.algorithms()) {
+                for (ExperimentMetric metric : commonAttributes.metrics()) {
+                    for (int iteration = ITERATION_INTERVAL; iteration <= commonAttributes.iterations(); iteration += ITERATION_INTERVAL) {
                         List<Double> resultsForIteration = new ArrayList<>();
                         for (Experiment experiment : experiments) {
                             List<ExperimentResult> experimentResults = experimentsResults.get(experiment.getId());
@@ -219,6 +188,47 @@ public class ExperimentService {
 
         return results;
     }
+
+    private CommonAttributes getCommonAttributes(List<Experiment> experiments) {
+        int iterations = experiments.stream()
+                .map(Experiment::getEvaluations)
+                .reduce(Integer::min)
+                .orElse(0);
+
+        List<Problem> commonProblems = experiments.stream()
+                .map(Experiment::getProblems)
+                .flatMap(Collection::stream)
+                .map(Problem::getProblemName)
+                .distinct()
+                .map(problemName -> experiments.getFirst().getProblems().stream()
+                        .filter(p -> p.getProblemName().equals(problemName))
+                        .findFirst().orElseThrow())
+                .toList();
+
+        List<Algorithm> commonAlgorithms = experiments.stream()
+                .map(Experiment::getAlgorithms)
+                .flatMap(Collection::stream)
+                .map(Algorithm::getAlgorithmName)
+                .distinct()
+                .map(algorithmName -> experiments.getFirst().getAlgorithms().stream()
+                        .filter(a -> a.getAlgorithmName().equals(algorithmName))
+                        .findFirst().orElseThrow())
+                .toList();
+
+        List<ExperimentMetric> commonMetrics = experiments.stream()
+                .map(Experiment::getMetrics)
+                .flatMap(Collection::stream)
+                .map(ExperimentMetric::getMetricName)
+                .distinct()
+                .map(metricName -> experiments.getFirst().getMetrics().stream()
+                        .filter(m -> m.getMetricName().equals(metricName))
+                        .findFirst().orElseThrow())
+                .toList();
+
+        return new CommonAttributes(iterations, commonProblems, commonAlgorithms, commonMetrics);
+    }
+
+    private record CommonAttributes(int iterations, List<Problem> problems, List<Algorithm> algorithms, List<ExperimentMetric> metrics) {}
 
     private double computeStandardDeviation(List<Double> numbers, double mean) {
         double sum = 0;

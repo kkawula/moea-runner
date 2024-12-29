@@ -1,5 +1,6 @@
 package com.moea.controller;
 
+import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.ExperimentDTO;
 import com.moea.dto.ExperimentResultDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
@@ -45,6 +46,15 @@ public class ExperimentController {
         return experimentService.getUniqueExperiments().stream()
                 .map(experimentMapper::toDTO)
                 .toList();
+    }
+
+    @GetMapping("/aggregated-results")
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(@RequestParam List<Long> experimentIds) {
+        try {
+            return experimentService.getAggregatedExperimentResults(experimentIds);
+        } catch (ExperimentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}/results")

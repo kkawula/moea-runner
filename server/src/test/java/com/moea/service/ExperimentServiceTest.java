@@ -7,12 +7,14 @@ import com.moea.model.Experiment;
 import com.moea.model.ExperimentResult;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
+import com.moea.specifications.ExperimentSpecifications;
 import com.moea.util.ExperimentMapper;
 import com.moea.util.ExperimentValidator;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +40,9 @@ public class ExperimentServiceTest {
     @Mock
     private ExperimentValidator experimentValidator;
 
+    @Mock
+    private ExperimentSpecifications experimentSpecifications;
+
     @InjectMocks
     private ExperimentService experimentService;
 
@@ -48,10 +53,10 @@ public class ExperimentServiceTest {
         Experiment experiment2 = Experiment.builder().id(2L).evaluations(200).status(ExperimentStatus.FINISHED).build();
         List<Experiment> experiments = List.of(experiment1, experiment2);
 
-        when(experimentRepository.findAll()).thenReturn(experiments);
+        when(experimentRepository.findAll(any(Specification.class))).thenReturn(experiments);
 
         // When
-        List<Experiment> result = experimentService.getExperiments();
+        List<Experiment> result = experimentService.getExperiments(null, null, null, null, null);
 
         // Then
         assertNotNull(result);
@@ -63,7 +68,7 @@ public class ExperimentServiceTest {
     @Test
     void testGetExperimentResults_Success() {
         // Given
-        Experiment experiment = Experiment.builder().id(1L).evaluations(100).status(ExperimentStatus.RUNNING).build();
+        Experiment experiment = Experiment.builder().id(1L).evaluations(200).status(ExperimentStatus.RUNNING).build();
         ExperimentResult result1 = ExperimentResult.builder().result(0.5).build();
         ExperimentResult result2 = ExperimentResult.builder().result(0.6).build();
         List<ExperimentResult> results = List.of(result1, result2);

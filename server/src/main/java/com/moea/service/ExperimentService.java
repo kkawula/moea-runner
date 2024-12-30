@@ -136,10 +136,10 @@ public class ExperimentService {
             experimentsResults.put(experiment.getId(), experimentResults);
         }
 
-        return combineResults(commonAttributes, experiments, experimentsResults);
+        return combineResults(commonAttributes, experimentsResults);
     }
 
-    private List<AggregatedExperimentResultDTO> combineResults(CommonAttributes commonAttributes, List<Experiment> experiments, Map<Long, List<ExperimentResult>> experimentsResults) {
+    private List<AggregatedExperimentResultDTO> combineResults(CommonAttributes commonAttributes, Map<Long, List<ExperimentResult>> experimentsResults) {
         List<AggregatedExperimentResultDTO> results = new ArrayList<>();
 
         for (Problem problem : commonAttributes.problems()) {
@@ -147,8 +147,8 @@ public class ExperimentService {
                 for (ExperimentMetric metric : commonAttributes.metrics()) {
                     for (int iteration = ITERATION_INTERVAL; iteration <= commonAttributes.iterations(); iteration += ITERATION_INTERVAL) {
                         List<Double> resultsForIteration = new ArrayList<>();
-                        for (Experiment experiment : experiments) {
-                            List<ExperimentResult> experimentResults = experimentsResults.get(experiment.getId());
+                        for (var entry : experimentsResults.entrySet()) {
+                            List<ExperimentResult> experimentResults = entry.getValue();
                             int iteration_ = iteration;
                             Optional<ExperimentResult> result = experimentResults.stream()
                                     .filter(r -> r.getProblem().equals(problem.getProblemName())

@@ -9,7 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/experiments")
@@ -23,8 +26,23 @@ public class ExperimentController {
     }
 
     @GetMapping
-    public List<ExperimentDTO> getExperiments() {
-        return experimentService.getExperiments().stream()
+    public List<ExperimentDTO> getExperiments(
+            @RequestParam(required = false) String algorithmName,
+            @RequestParam(required = false) String problemName,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Date fromDate,
+            @RequestParam(required = false) Date toDate
+    ) {
+        return experimentService.getExperiments(
+                        algorithmName, problemName, status, fromDate, toDate
+                ).stream()
+                .map(experimentMapper::toDTO)
+                .toList();
+    }
+
+    @GetMapping("/unique")
+    public List<ExperimentDTO> getUniqueExperiments() {
+        return experimentService.getUniqueExperiments().stream()
                 .map(experimentMapper::toDTO)
                 .toList();
     }
@@ -57,11 +75,38 @@ public class ExperimentController {
     }
 
     @PostMapping()
-    public Long createExperiment(@RequestBody ExperimentDTO experimentDTO) {
+    public List<Long> createExperiment(@RequestBody ExperimentDTO experimentDTO, @RequestParam(required = false) Integer invocations) {
         try {
-            return experimentService.createExperiment(experimentDTO);
+            List<Long> experimentIds = new ArrayList<>();
+            UUID groupId = UUID.randomUUID();
+            experimentDTO.setGroupId(groupId);
+            if (invocations == null) {
+                experimentIds.add(experimentService.createExperiment(experimentDTO));
+            } else {
+                for (int i = 0; i < invocations; i++) {
+                    experimentIds.add(experimentService.createExperiment(experimentDTO));
+                }
+            }
+            return experimentIds;
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/repeat")
+    public List<Long> repeatExperiment(@PathVariable Long id, @RequestParam(required = false) Integer invocations) {
+        try {
+            List<Long> experimentIds = new ArrayList<>();
+            if (invocations == null) {
+                experimentIds.add(experimentService.repeatExperiment(id));
+            } else {
+                for (int i = 0; i < invocations; i++) {
+                    experimentIds.add(experimentService.repeatExperiment(id));
+                }
+            }
+            return experimentIds;
+        } catch (ExperimentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 }

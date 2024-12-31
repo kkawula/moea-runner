@@ -21,4 +21,7 @@ interface ApiService {
 
     @POST("experiments")
     suspend fun createExperiment(@Body experiment: NewExperiment, @Query("invocations") invocations: Int?): List<Int>
+
+    @POST("experiments/{id}/repeat")
+    suspend fun repeatExperiment(@Path("id") id: Int, @Query("invocations") invocations: Int?): List<Int>
 }

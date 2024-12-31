@@ -47,4 +47,5 @@ class ApiClient(baseUrl: String = BASE_URL) {
     suspend fun getExperimentResults(id: Int) = apiService.getExperimentResults(id)
     suspend fun getExperimentStatus(id: Int) = apiService.getExperimentStatus(id)
     suspend fun createExperiment(experiment: NewExperiment, invocations: Int?) = apiService.createExperiment(experiment, invocations)
+    suspend fun repeatExperiment(id: Int, invocations: Int?) = apiService.repeatExperiment(id, invocations)
 }

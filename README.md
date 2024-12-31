@@ -38,6 +38,9 @@ To start server with created binary, run the following command:
 ./cli/build/install/moea-client/bin/moea-client experiment-results 1
 ```
 
+```shell
+./cli/build/install/moea-client/bin/moea-client experiment-repeat 1 --invocations 2
+```
 ## 4. Clean the environment
 
 ```shell

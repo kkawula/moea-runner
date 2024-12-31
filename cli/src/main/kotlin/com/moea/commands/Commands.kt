@@ -120,3 +120,25 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
         }
     }
 }
+
+class RepeatExperimentCommand : CliktCommand("experiment-repeat") {
+    private val commonArgs by requireObject<CommonArgs>()
+
+    private val id by argument().int()
+    private val invocations by option("--invocations", help = "Number of invocations").int()
+
+    override fun run(): Unit = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
+        try {
+            val result = sendRequest(apiClient) { client ->
+                client.repeatExperiment(id, invocations)
+            }
+            result.onSuccess { experiment ->
+                println("Experiment $id repeated with id: $experiment")
+            }
+        } finally {
+            apiClient.close()
+        }
+    }
+}

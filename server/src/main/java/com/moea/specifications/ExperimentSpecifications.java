@@ -46,7 +46,7 @@ public class ExperimentSpecifications {
             if (fromDate == null || toDate == null) {
                 return null;
             }
-            return criteriaBuilder.between(root.get("date"), fromDate, toDate);
+            return criteriaBuilder.between(root.get("startDate"), fromDate, toDate);
         };
     }
 

@@ -9,20 +9,31 @@ import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.int
 import com.moea.ApiClient
 import com.moea.NewExperiment
-import com.moea.helpers.CommonArgs
-import com.moea.helpers.prettyRepr
-import com.moea.helpers.printFormattedResults
-import com.moea.helpers.sendRequest
+import com.moea.helpers.*
 import kotlinx.coroutines.runBlocking
 
 class ListExperimentsCommand : CliktCommand("experiments-list") {
     private val commonArgs by requireObject<CommonArgs>()
 
+    private val algorithmName by option("--algorithm-name", help = "Filter by algorithm name")
+    private val problemName by option("--problem-name", help = "Filter by problem name")
+    private val status by option("--status", help = "Filter by status")
+    private val fromDate by option("--from-date", help = "Filter from date")
+    private val toDate by option("--to-date", help = "Filter to date")
+
     override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
+        val filter = ExperimentFilter(
+            algorithmName = algorithmName,
+            problemName = problemName,
+            status = status,
+            fromDate = fromDate,
+            toDate = toDate
+        )
+
         try {
             val result = sendRequest(apiClient) { client ->
-                client.getExperimentList()
+                client.getExperimentList(filter)
             }
             result.onSuccess { experiments ->
                 experiments.forEach {

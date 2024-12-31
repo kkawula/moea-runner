@@ -27,7 +27,7 @@ To start server with created binary, run the following command:
 ```
 
 ```shell
-./cli/build/install/moea-client/bin/moea-client experiments-list
+./cli/build/install/moea-client/bin/moea-client experiments-list --algorithm-name NSGAII --problem-name UF1 --status FINISHED --from-date 1/1/1410 --to-date 1/1/2077
 ```
 
 ```shell

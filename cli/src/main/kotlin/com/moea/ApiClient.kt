@@ -3,6 +3,7 @@ package com.moea
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
 import com.moea.helpers.BASE_URL
+import com.moea.helpers.ExperimentFilter
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -35,7 +36,14 @@ class ApiClient(baseUrl: String = BASE_URL) {
         okHttpClient.connectionPool().evictAll()
     }
 
-    suspend fun getExperimentList() = apiService.getExperimentList()
+    suspend fun getExperimentList(filter: ExperimentFilter) = apiService.getExperimentList(
+        filter.algorithmName,
+        filter.problemName,
+        filter.status,
+        filter.fromDate,
+        filter.toDate
+    )
+
     suspend fun getExperimentResults(id: Int) = apiService.getExperimentResults(id)
     suspend fun getExperimentStatus(id: Int) = apiService.getExperimentStatus(id)
     suspend fun createExperiment(experiment: NewExperiment) = apiService.createExperiment(experiment)

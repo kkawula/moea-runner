@@ -20,5 +20,5 @@ interface ApiService {
     suspend fun getExperimentStatus(@Path("id") id: Int): String
 
     @POST("experiments")
-    suspend fun createExperiment(@Body experiment: NewExperiment): Int
+    suspend fun createExperiment(@Body experiment: NewExperiment, @Query("invocations") invocations: Int?): List<Int>
 }

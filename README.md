@@ -23,7 +23,7 @@ To start server with created binary, run the following command:
 ## 3. Run the CLI
 
 ```shell
-./cli/build/install/moea-client/bin/moea-client experiment-create --evaluations 2000 --algorithms NSGAII,GDE3 --problems UF1,DTLZ2_2 --metrics Hypervolume,Spacing
+./cli/build/install/moea-client/bin/moea-client experiment-create --evaluations 2000 --algorithms NSGAII,GDE3 --problems UF1,DTLZ2_2 --metrics Hypervolume,Spacing --invocations 2
 ```
 
 ```shell

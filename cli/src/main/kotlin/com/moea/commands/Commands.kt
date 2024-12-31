@@ -96,6 +96,8 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
     private val problems by option("--problems", help = "Comma-separated list of problems").split(",").required()
     private val metrics by option("--metrics", help = "Comma-separated list of metrics").split(",").required()
 
+    private val invocations by option("--invocations", help = "Number of invocations").int()
+
     override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
 
@@ -108,7 +110,7 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
 
         try {
             val result = sendRequest(apiClient) { client ->
-                client.createExperiment(newExperiment)
+                client.createExperiment(newExperiment, invocations)
             }
             result.onSuccess { experiment ->
                 println("Experiment created with id: $experiment")

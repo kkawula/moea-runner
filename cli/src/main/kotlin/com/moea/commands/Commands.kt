@@ -142,3 +142,24 @@ class RepeatExperimentCommand : CliktCommand("experiment-repeat") {
         }
     }
 }
+
+class GetUniqueExperimentsCommand : CliktCommand("unique-experiments") {
+    private val commonArgs by requireObject<CommonArgs>()
+
+    override fun run(): Unit = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
+        try {
+            val result = sendRequest(apiClient) { client ->
+                client.getUniqueExperiments()
+            }
+            result.onSuccess { experiments ->
+                experiments.forEach {
+                    println(it.prettyRepr())
+                }
+            }
+        } finally {
+            apiClient.close()
+        }
+    }
+}

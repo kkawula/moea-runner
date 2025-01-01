@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,15 +29,20 @@ public class ExperimentController {
     public List<ExperimentDTO> getExperiments(
             @RequestParam(required = false) String algorithmName,
             @RequestParam(required = false) String problemName,
+            @RequestParam(required = false) String metricName,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) Date fromDate,
-            @RequestParam(required = false) Date toDate
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate
     ) {
-        return experimentService.getExperiments(
-                        algorithmName, problemName, status, fromDate, toDate
-                ).stream()
-                .map(experimentMapper::toDTO)
-                .toList();
+        try {
+            return experimentService.getExperiments(
+                            algorithmName, problemName, status, metricName, fromDate, toDate
+                    ).stream()
+                    .map(experimentMapper::toDTO)
+                    .toList();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @GetMapping("/unique")

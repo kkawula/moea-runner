@@ -20,6 +20,8 @@ import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -102,11 +104,12 @@ public class ExperimentService {
         }).subscribeOn(Schedulers.computation());
     }
 
-    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, Date fromDate, Date toDate) {
+    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, String metric, String fromDate, String toDate) throws ParseException {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withAlgorithm(algorithmName))
                 .and(experimentSpecifications.withProblem(problemName))
                 .and(experimentSpecifications.withStatus(status))
-                .and(experimentSpecifications.withinDateRange(fromDate, toDate));
+                .and(experimentSpecifications.withMetric(metric))
+                .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
 
         return experimentRepository.findAll(spec);
     }
@@ -247,5 +250,10 @@ public class ExperimentService {
         Experiment experiment = experimentRepository.findById(experimentId).orElseThrow(ExperimentNotFoundException::new);
         experiment.setStatus(status);
         experimentRepository.save(experiment);
+    }
+
+    public static Date convertStringToDate(String dateString) throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateFormat.parse(dateString);
     }
 }

@@ -45,7 +45,8 @@ fun printFormattedAggregatedResults(results: List<AggregatedExperimentResult>) {
 
     val metrics = results.map { it.metric }.distinct().sorted()
 
-    val header = listOf("Problem", "Algorithm", "NFE") + metrics.flatMap { listOf("$it Mean", "$it Median", "$it StdDev") }
+    val header =
+        listOf("Problem", "Algorithm", "NFE") + metrics.flatMap { listOf("$it Mean", "$it Median", "$it StdDev") }
     println(header.joinToString(" ") { it.padEnd(23) })
     println("-".repeat(header.size * 23))
 

@@ -170,7 +170,8 @@ class GetUniqueExperimentsCommand : CliktCommand("unique-experiments") {
 class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experiments-results") {
     private val commonArgs by requireObject<CommonArgs>()
 
-    private val experimentIds by argument("experiment-ids", help = "Space-separated list of experiment ids").int().multiple(required = true)
+    private val experimentIds by argument("experiment-ids", help = "Space-separated list of experiment ids").int()
+        .multiple(required = true)
 
 
     override fun run(): Unit = runBlocking {

@@ -14,7 +14,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +44,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    public void testProblemNameSpecification_ExampleProblemName_ExpectedResultArraySizeEquals3(){
+    public void testProblemNameSpecification_ExampleProblemName_ExpectedResultArraySizeEquals3() {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withProblem("ZDT1"));
 
         // WHEN
@@ -61,7 +63,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    public void testAlgorithmNameSpecification_ExampleAlgorithmName_ExpectedResultArraySizeEquals1(){
+    public void testAlgorithmNameSpecification_ExampleAlgorithmName_ExpectedResultArraySizeEquals1() {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withAlgorithm("NSGAII"));
 
         // WHEN
@@ -73,14 +75,14 @@ public class ExperimentSpecificationsTest {
 
     @Test
     public void testAlgorithmNameSpecificationMvc_ExampleAlgorithmName_ExpectedResultArraySizeEquals1() throws Exception {
-         mockMvc.perform(get("/experiments")
+        mockMvc.perform(get("/experiments")
                         .param("algorithmName", "NSGAII"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test
-    public void testMetricNameSpecification_ExampleMetricName_ExpectedResultArraySizeEquals2(){
+    public void testMetricNameSpecification_ExampleMetricName_ExpectedResultArraySizeEquals2() {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withMetric("Spacing"));
 
         // WHEN

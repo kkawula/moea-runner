@@ -1,6 +1,7 @@
 package com.moea.controller;
 
 import com.moea.TestConst;
+import com.moea.dto.ExperimentDTO;
 import com.moea.model.Experiment;
 import com.moea.repository.ExperimentRepository;
 import com.moea.service.ExperimentService;
@@ -100,37 +101,45 @@ public class ExperimentSpecificationsTest {
                 .andExpect(jsonPath("$", hasSize(2)));
     }
 
-    //TODO: there is a difference between the dates that are set for the experiment and those that will be sent to the database - need to synchronized it
     @Test
     public void testWithinDateRangeSpecification_ValidDateRange_ExpectedResultArraySizeEquals3() {
         // GIVEN
         Calendar calendar = Calendar.getInstance();
-        calendar.set(2025, Calendar.JANUARY, 1, 1, 0, 0);
+        calendar.set(2025, Calendar.JANUARY, 1, 0, 30, 0);
         Date fromDate = calendar.getTime();
-        calendar.set(2025, Calendar.JANUARY, 1, 4, 0, 0);
+        calendar.set(2025, Calendar.JANUARY, 1, 4, 30, 0);
         Date toDate = calendar.getTime();
+        List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
+        List<Experiment> dbExperiments = experimentRepository.findAll();
+        for (int i = 0; i < experimentDTOList.size(); i++) {
+            dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
+            dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
+        }
+
         Specification<Experiment> spec = Specification.where(
                 experimentSpecifications.withinDateRange(fromDate, toDate));
 
         // WHEN
-        List<Experiment> result = experimentRepository.findAll();
-
-        System.out.println(fromDate);
-        System.out.println(toDate);
-        result.forEach(experiment -> {
-            System.out.println(experiment.getStartDate());
-        });
+        List<Experiment> result = experimentRepository.findAll(spec);
 
         // THEN
         assertEquals(3, result.size());
     }
 
-    //TODO: same here
     @Test
     public void testWithinDateRangeSpecificationMvc_ValidDateRange_ExpectedResultArraySizeEquals3() throws Exception {
+        // GIVEN
+        List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
+        List<Experiment> dbExperiments = experimentRepository.findAll();
+        for (int i = 0; i < experimentDTOList.size(); i++) {
+            dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
+            dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
+        }
+
+        // THEN
         mockMvc.perform(get("/experiments")
-                        .param("fromDate", "2025-01-01 01:00:00")
-                        .param("toDate", "2025-01-01 04:00:00"))
+                        .param("fromDate", "2025-01-01 00:30:00")
+                        .param("toDate", "2025-01-01 04:30:00"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)));
     }

@@ -1,17 +1,14 @@
 package com.moea.service;
 
 import com.moea.ExperimentStatus;
-import com.moea.dto.AlgorithmProblemResult;
-import com.moea.dto.ExperimentDTO;
+import com.moea.dto.*;
 import com.moea.exceptions.ExperimentNotFoundException;
-import com.moea.model.Algorithm;
-import com.moea.model.Experiment;
-import com.moea.model.ExperimentResult;
-import com.moea.model.Problem;
+import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
 import com.moea.specifications.ExperimentSpecifications;
 import com.moea.util.ExperimentMapper;
+import com.moea.util.ExperimentsResultsAggregator;
 import com.moea.util.ExperimentValidator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -21,9 +18,9 @@ import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 @Service
@@ -34,14 +31,16 @@ public class ExperimentService {
     private final ExperimentValidator experimentValidator;
     private final ExperimentMapper experimentMapper;
     private final ExperimentSpecifications experimentSpecifications;
+    private final ExperimentsResultsAggregator experimentsResultsAggregator;
 
-    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications) {
+    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications, ExperimentsResultsAggregator experimentsResultsAggregator) {
         this.experimentRepository = experimentRepository;
         this.experimentResultsRepository = experimentResultsRepository;
         this.experimentRunnerService = experimentRunnerService;
         this.experimentValidator = experimentValidator;
         this.experimentMapper = experimentMapper;
         this.experimentSpecifications = experimentSpecifications;
+        this.experimentsResultsAggregator = experimentsResultsAggregator;
     }
 
     public Long createExperiment(ExperimentDTO experimentDTO) {
@@ -57,12 +56,6 @@ public class ExperimentService {
                 .subscribe();
 
         return newExperimentID;
-    }
-
-    public Long repeatExperiment(Long id) {
-        Experiment experiment = experimentRepository.findById(id).orElseThrow(ExperimentNotFoundException::new);
-        ExperimentDTO experimentDTO = experimentMapper.toRequestDTO(experiment);
-        return createExperiment(experimentDTO);
     }
 
     private Observable<AlgorithmProblemResult> createAndRunExperiment(Long ExperimentId) {
@@ -104,11 +97,18 @@ public class ExperimentService {
         }).subscribeOn(Schedulers.computation());
     }
 
-    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, Date fromDate, Date toDate) {
+    public Long repeatExperiment(Long id) {
+        Experiment experiment = experimentRepository.findById(id).orElseThrow(ExperimentNotFoundException::new);
+        ExperimentDTO experimentDTO = experimentMapper.toRequestDTO(experiment);
+        return createExperiment(experimentDTO);
+    }
+
+    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, String metric, String fromDate, String toDate) throws ParseException {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withAlgorithm(algorithmName))
                 .and(experimentSpecifications.withProblem(problemName))
                 .and(experimentSpecifications.withStatus(status))
-                .and(experimentSpecifications.withinDateRange(fromDate, toDate));
+                .and(experimentSpecifications.withMetric(metric))
+                .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
 
         return experimentRepository.findAll(spec);
     }
@@ -122,6 +122,23 @@ public class ExperimentService {
         return experimentResultsRepository.findByExperimentId(id);
     }
 
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds) {
+        List<Experiment> experiments = experimentRepository.findAllById(experimentIds);
+
+        if (experiments.size() != experimentIds.size()) {
+            throw new ExperimentNotFoundException();
+        }
+
+        Map<Long, List<ExperimentResult>> experimentsResults = new HashMap<>();
+
+        for (Experiment experiment : experiments) {
+            List<ExperimentResult> experimentResults = experimentResultsRepository.findByExperimentId(experiment.getId());
+            experimentsResults.put(experiment.getId(), experimentResults);
+        }
+
+        return experimentsResultsAggregator.combineResults(experiments, experimentsResults);
+    }
+
     public ExperimentStatus getExperimentStatus(Long id) {
         return experimentRepository.findById(id).map(Experiment::getStatus)
                 .orElseThrow(ExperimentNotFoundException::new);
@@ -131,5 +148,10 @@ public class ExperimentService {
         Experiment experiment = experimentRepository.findById(experimentId).orElseThrow(ExperimentNotFoundException::new);
         experiment.setStatus(status);
         experimentRepository.save(experiment);
+    }
+
+    public static Date convertStringToDate(String dateString) throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateString == null ? null : dateFormat.parse(dateString);
     }
 }

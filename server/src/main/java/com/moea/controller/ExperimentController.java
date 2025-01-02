@@ -1,5 +1,6 @@
 package com.moea.controller;
 
+import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.ExperimentDTO;
 import com.moea.dto.ExperimentResultDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,15 +29,20 @@ public class ExperimentController {
     public List<ExperimentDTO> getExperiments(
             @RequestParam(required = false) String algorithmName,
             @RequestParam(required = false) String problemName,
+            @RequestParam(required = false) String metricName,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) Date fromDate,
-            @RequestParam(required = false) Date toDate
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate
     ) {
-        return experimentService.getExperiments(
-                        algorithmName, problemName, status, fromDate, toDate
-                ).stream()
-                .map(experimentMapper::toDTO)
-                .toList();
+        try {
+            return experimentService.getExperiments(
+                            algorithmName, problemName, status, metricName, fromDate, toDate
+                    ).stream()
+                    .map(experimentMapper::toDTO)
+                    .toList();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @GetMapping("/unique")
@@ -45,6 +50,15 @@ public class ExperimentController {
         return experimentService.getUniqueExperiments().stream()
                 .map(experimentMapper::toDTO)
                 .toList();
+    }
+
+    @GetMapping("/aggregated-results")
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(@RequestParam List<Long> experimentIds) {
+        try {
+            return experimentService.getAggregatedExperimentResults(experimentIds);
+        } catch (ExperimentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}/results")

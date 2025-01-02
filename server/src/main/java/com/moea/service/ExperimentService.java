@@ -1,16 +1,14 @@
 package com.moea.service;
 
 import com.moea.ExperimentStatus;
-import com.moea.dto.AggregatedExperimentResultDTO;
-import com.moea.dto.AggregatedStats;
-import com.moea.dto.AlgorithmProblemResult;
-import com.moea.dto.ExperimentDTO;
+import com.moea.dto.*;
 import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
 import com.moea.specifications.ExperimentSpecifications;
 import com.moea.util.ExperimentMapper;
+import com.moea.util.ExperimentsResultsAggregator;
 import com.moea.util.ExperimentValidator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -34,15 +31,16 @@ public class ExperimentService {
     private final ExperimentValidator experimentValidator;
     private final ExperimentMapper experimentMapper;
     private final ExperimentSpecifications experimentSpecifications;
-    private final static int ITERATION_INTERVAL = 100;
+    private final ExperimentsResultsAggregator experimentsResultsAggregator;
 
-    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications) {
+    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications, ExperimentsResultsAggregator experimentsResultsAggregator) {
         this.experimentRepository = experimentRepository;
         this.experimentResultsRepository = experimentResultsRepository;
         this.experimentRunnerService = experimentRunnerService;
         this.experimentValidator = experimentValidator;
         this.experimentMapper = experimentMapper;
         this.experimentSpecifications = experimentSpecifications;
+        this.experimentsResultsAggregator = experimentsResultsAggregator;
     }
 
     public Long createExperiment(ExperimentDTO experimentDTO) {
@@ -58,12 +56,6 @@ public class ExperimentService {
                 .subscribe();
 
         return newExperimentID;
-    }
-
-    public Long repeatExperiment(Long id) {
-        Experiment experiment = experimentRepository.findById(id).orElseThrow(ExperimentNotFoundException::new);
-        ExperimentDTO experimentDTO = experimentMapper.toRequestDTO(experiment);
-        return createExperiment(experimentDTO);
     }
 
     private Observable<AlgorithmProblemResult> createAndRunExperiment(Long ExperimentId) {
@@ -105,6 +97,12 @@ public class ExperimentService {
         }).subscribeOn(Schedulers.computation());
     }
 
+    public Long repeatExperiment(Long id) {
+        Experiment experiment = experimentRepository.findById(id).orElseThrow(ExperimentNotFoundException::new);
+        ExperimentDTO experimentDTO = experimentMapper.toRequestDTO(experiment);
+        return createExperiment(experimentDTO);
+    }
+
     public List<Experiment> getExperiments(String algorithmName, String problemName, String status, String metric, String fromDate, String toDate) throws ParseException {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withAlgorithm(algorithmName))
                 .and(experimentSpecifications.withProblem(problemName))
@@ -131,8 +129,6 @@ public class ExperimentService {
             throw new ExperimentNotFoundException();
         }
 
-        CommonAttributes commonAttributes = getCommonAttributes(experiments);
-
         Map<Long, List<ExperimentResult>> experimentsResults = new HashMap<>();
 
         for (Experiment experiment : experiments) {
@@ -140,103 +136,7 @@ public class ExperimentService {
             experimentsResults.put(experiment.getId(), experimentResults);
         }
 
-        return combineResults(commonAttributes, experimentsResults);
-    }
-
-    private List<AggregatedExperimentResultDTO> combineResults(CommonAttributes commonAttributes, Map<Long, List<ExperimentResult>> experimentsResults) {
-        List<AggregatedExperimentResultDTO> results = new ArrayList<>();
-
-        for (String problemName : commonAttributes.problemNames()) {
-            for (String algorithmName : commonAttributes.algorithmNames()) {
-                for (String metricName : commonAttributes.metricNames()) {
-                    for (int iteration = ITERATION_INTERVAL; iteration <= commonAttributes.iterations(); iteration += ITERATION_INTERVAL) {
-                        List<Double> resultsForIteration = new ArrayList<>();
-                        for (var entry : experimentsResults.entrySet()) {
-                            List<ExperimentResult> experimentResults = entry.getValue();
-                            int iteration_ = iteration;
-                            Optional<ExperimentResult> result = experimentResults.stream()
-                                    .filter(r -> r.getProblem().equals(problemName)
-                                            && r.getAlgorithm().equals(algorithmName)
-                                            && r.getMetric().equals(metricName)
-                                            && r.getIteration() == iteration_)
-                                    .findFirst();
-
-                            result.ifPresent(experimentResult -> resultsForIteration.add(experimentResult.getResult()));
-                        }
-
-                        if (!resultsForIteration.isEmpty()) {
-                            double mean = resultsForIteration.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-                            double median = resultsForIteration.stream().sorted().skip(resultsForIteration.size() / 2).findFirst().orElse(0.0);
-                            double stdDev = computeStandardDeviation(resultsForIteration, mean);
-
-                            AggregatedStats stats = AggregatedStats.builder()
-                                    .mean(mean)
-                                    .median(median)
-                                    .stdDev(stdDev)
-                                    .build();
-
-                            AggregatedExperimentResultDTO result = AggregatedExperimentResultDTO.builder()
-                                    .problem(problemName)
-                                    .algorithm(algorithmName)
-                                    .metric(metricName)
-                                    .iteration(iteration)
-                                    .result(stats)
-                                    .build();
-
-                            results.add(result);
-                        }
-                    }
-                }
-            }
-        }
-
-        return results;
-    }
-
-    private CommonAttributes getCommonAttributes(List<Experiment> experiments) {
-        int iterations = experiments.stream()
-                .map(Experiment::getEvaluations)
-                .reduce(Integer::min)
-                .orElse(0);
-
-        List<String> commonProblems = experiments.stream()
-                .map(Experiment::getProblems)
-                .map(problems -> problems.stream().map(Problem::getProblemName).collect(Collectors.toSet()))
-                .reduce((p1, p2) -> {
-                    p1.retainAll(p2);
-                    return p1;
-                })
-                .get().stream().toList();
-
-        List<String> commonAlgorithms = experiments.stream()
-                .map(Experiment::getAlgorithms)
-                .map(algorithms -> algorithms.stream().map(Algorithm::getAlgorithmName).collect(Collectors.toSet()))
-                .reduce((a1, a2) -> {
-                    a1.retainAll(a2);
-                    return a1;
-                })
-                .get().stream().toList();
-
-        List<String> commonMetrics = experiments.stream()
-                .map(Experiment::getMetrics)
-                .map(metrics -> metrics.stream().map(ExperimentMetric::getMetricName).collect(Collectors.toSet()))
-                .reduce((m1, m2) -> {
-                    m1.retainAll(m2);
-                    return m1;
-                })
-                .get().stream().toList();
-
-        return new CommonAttributes(iterations, commonProblems, commonAlgorithms, commonMetrics);
-    }
-
-    private record CommonAttributes(int iterations, List<String> problemNames, List<String> algorithmNames, List<String> metricNames) {}
-
-    private double computeStandardDeviation(List<Double> numbers, double mean) {
-        double sum = 0;
-        for (double result : numbers) {
-            sum += Math.pow(result - mean, 2);
-        }
-        return Math.sqrt(sum / numbers.size());
+        return experimentsResultsAggregator.combineResults(experiments, experimentsResults);
     }
 
     public ExperimentStatus getExperimentStatus(Long id) {
@@ -252,6 +152,6 @@ public class ExperimentService {
 
     public static Date convertStringToDate(String dateString) throws ParseException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return dateFormat.parse(dateString);
+        return dateString == null ? null : dateFormat.parse(dateString);
     }
 }

@@ -38,8 +38,7 @@ public class ExperimentSpecificationsTest {
     @BeforeEach
     public void setup() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(controllerUnderTest).build();
-        TestConst.getExperiments().forEach(experiment -> {experimentService.createExperiment(experiment);});
-
+        TestConst.getExperiments().forEach(experiment -> experimentService.createExperiment(experiment));
     }
 
     @Test
@@ -59,7 +58,6 @@ public class ExperimentSpecificationsTest {
                         .param("problemName", "ZDT1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)));
-
     }
 
     @Test
@@ -134,6 +132,4 @@ public class ExperimentSpecificationsTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)));
     }
-
-
 }

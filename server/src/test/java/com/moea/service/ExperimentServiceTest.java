@@ -2,6 +2,7 @@ package com.moea.service;
 
 import com.moea.ExperimentStatus;
 import com.moea.dto.AggregatedExperimentResultDTO;
+import com.moea.dto.AggregatedStats;
 import com.moea.dto.ExperimentDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.*;
@@ -10,6 +11,7 @@ import com.moea.repository.ExperimentResultsRepository;
 import com.moea.specifications.ExperimentSpecifications;
 import com.moea.util.ExperimentMapper;
 import com.moea.util.ExperimentValidator;
+import com.moea.util.ExperimentsResultsAggregator;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -19,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,6 +49,9 @@ public class ExperimentServiceTest {
 
     @Mock
     private ExperimentSpecifications experimentSpecifications;
+
+    @Mock
+    private ExperimentsResultsAggregator experimentsResultsAggregator;
 
     @InjectMocks
     private ExperimentService experimentService;
@@ -411,10 +417,32 @@ public class ExperimentServiceTest {
                 .result(400.0)
                 .build();
 
+        Map<Long, List<ExperimentResult>> experimentsResults = Map.of(
+                experimentId1, List.of(result1_1, result1_2, result1_3, result1_4),
+                experimentId2, List.of(result2_1, result2_2, result2_3, result2_4, result2_5, result2_6, result2_7, result2_8),
+                experimentId3, List.of(result3_1, result3_2, result3_3)
+        );
+
         when(experimentRepository.findAllById(experimentIds)).thenReturn(experiments);
-        when(experimentResultsRepository.findByExperimentId(experimentId1)).thenReturn(List.of(result1_1, result1_2, result1_3, result1_4));
-        when(experimentResultsRepository.findByExperimentId(experimentId2)).thenReturn(List.of(result2_1, result2_2, result2_3, result2_4, result2_5, result2_6, result2_7, result2_8));
-        when(experimentResultsRepository.findByExperimentId(experimentId3)).thenReturn(List.of(result3_1, result3_2, result3_3));
+        when(experimentResultsRepository.findByExperimentId(experimentId1)).thenReturn(experimentsResults.get(experimentId1));
+        when(experimentResultsRepository.findByExperimentId(experimentId2)).thenReturn(experimentsResults.get(experimentId2));
+        when(experimentResultsRepository.findByExperimentId(experimentId3)).thenReturn(experimentsResults.get(experimentId3));
+        when(experimentsResultsAggregator.combineResults(experiments, experimentsResults)).thenReturn(List.of(
+                AggregatedExperimentResultDTO.builder()
+                        .problem(problem2.getProblemName())
+                        .algorithm(algorithm1.getAlgorithmName())
+                        .metric(metric1.getMetricName())
+                        .iteration(100)
+                        .result(AggregatedStats.builder().mean(400.0).median(200.0).stdDev(355.9).build())
+                        .build(),
+                AggregatedExperimentResultDTO.builder()
+                        .problem(problem2.getProblemName())
+                        .algorithm(algorithm1.getAlgorithmName())
+                        .metric(metric1.getMetricName())
+                        .iteration(200)
+                        .result(AggregatedStats.builder().mean(333.33).median(300.0).stdDev(124.72).build())
+                        .build()
+        ));
 
         // When
         List<AggregatedExperimentResultDTO> results = experimentService.getAggregatedExperimentResults(experimentIds);

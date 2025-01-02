@@ -267,58 +267,154 @@ public class ExperimentServiceTest {
         Experiment experiment1 = Experiment.builder()
                 .id(experimentId1)
                 .evaluations(200)
-                .problems(List.of(problem1, problem2))
+                .problems(List.of(problem2))
                 .algorithms(List.of(algorithm1, algorithm2))
-                .metrics(List.of(metric1, metric2))
+                .metrics(List.of(metric1))
                 .build();
 
         Experiment experiment2 = Experiment.builder()
                 .id(experimentId2)
                 .evaluations(200)
-                .problems(List.of(problem1))
+                .problems(List.of(problem1, problem2))
                 .algorithms(List.of(algorithm1))
-                .metrics(List.of(metric1))
+                .metrics(List.of(metric1, metric2))
                 .build();
 
         Experiment experiment3 = Experiment.builder()
-                .id(experimentId2)
+                .id(experimentId3)
                 .evaluations(300)
                 .problems(List.of(problem2))
-                .algorithms(List.of(algorithm2))
-                .metrics(List.of(metric2))
+                .algorithms(List.of(algorithm1))
+                .metrics(List.of(metric1))
                 .build();
 
         List<Long> experimentIds = List.of(experimentId1, experimentId2, experimentId3);
         List<Experiment> experiments = List.of(experiment1, experiment2, experiment3);
 
-        ExperimentResult result1 = ExperimentResult.builder()
-                .problem(problem1.getProblemName())
+        ExperimentResult result1_1 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
                 .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(100)
+                .result(100.0)
+                .build();
+
+        ExperimentResult result1_2 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
+                .algorithm(algorithm2.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(100)
+                .result(200.0)
+                .build();
+
+        ExperimentResult result1_3 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(200)
+                .result(300.0)
+                .build();
+
+        ExperimentResult result1_4 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
+                .algorithm(algorithm2.getAlgorithmName())
                 .metric(metric1.getMetricName())
                 .iteration(200)
                 .result(400.0)
                 .build();
 
-        ExperimentResult result2 = ExperimentResult.builder()
-                .problem(problem2.getProblemName())
-                .algorithm(algorithm2.getAlgorithmName())
-                .metric(metric2.getMetricName())
-                .iteration(200)
-                .result(600.0)
+        ExperimentResult result2_1 = ExperimentResult.builder()
+                .problem(problem1.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(100)
+                .result(100.0)
                 .build();
 
-        ExperimentResult result3 = ExperimentResult.builder()
+        ExperimentResult result2_2 = ExperimentResult.builder()
+                .problem(problem1.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric2.getMetricName())
+                .iteration(100)
+                .result(300.0)
+                .build();
+
+        ExperimentResult result2_3 = ExperimentResult.builder()
                 .problem(problem2.getProblemName())
-                .algorithm(algorithm2.getAlgorithmName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(100)
+                .result(200.0)
+                .build();
+
+        ExperimentResult result2_4 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric2.getMetricName())
+                .iteration(100)
+                .result(150.0)
+                .build();
+
+        ExperimentResult result2_5 = ExperimentResult.builder()
+                .problem(problem1.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(200)
+                .result(100.0)
+                .build();
+
+        ExperimentResult result2_6 = ExperimentResult.builder()
+                .problem(problem1.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
                 .metric(metric2.getMetricName())
                 .iteration(200)
+                .result(300.0)
+                .build();
+
+        ExperimentResult result2_7 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(200)
+                .result(200.0)
+                .build();
+
+        ExperimentResult result2_8 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric2.getMetricName())
+                .iteration(200)
+                .result(150.0)
+                .build();
+
+        ExperimentResult result3_1 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(100)
                 .result(900.0)
                 .build();
 
+        ExperimentResult result3_2 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(200)
+                .result(500.0)
+                .build();
+
+        ExperimentResult result3_3 = ExperimentResult.builder()
+                .problem(problem2.getProblemName())
+                .algorithm(algorithm1.getAlgorithmName())
+                .metric(metric1.getMetricName())
+                .iteration(300)
+                .result(400.0)
+                .build();
+
         when(experimentRepository.findAllById(experimentIds)).thenReturn(experiments);
-        when(experimentResultsRepository.findByExperimentId(experimentId1)).thenReturn(List.of(result1, result2));
-        when(experimentResultsRepository.findByExperimentId(experimentId2)).thenReturn(List.of(result1));
-        when(experimentResultsRepository.findByExperimentId(experimentId3)).thenReturn(List.of(result3));
+        when(experimentResultsRepository.findByExperimentId(experimentId1)).thenReturn(List.of(result1_1, result1_2, result1_3, result1_4));
+        when(experimentResultsRepository.findByExperimentId(experimentId2)).thenReturn(List.of(result2_1, result2_2, result2_3, result2_4, result2_5, result2_6, result2_7, result2_8));
+        when(experimentResultsRepository.findByExperimentId(experimentId3)).thenReturn(List.of(result3_1, result3_2, result3_3));
 
         // When
         List<AggregatedExperimentResultDTO> results = experimentService.getAggregatedExperimentResults(experimentIds);
@@ -329,28 +425,25 @@ public class ExperimentServiceTest {
         assertEquals(2, results.size());
 
         AggregatedExperimentResultDTO resultDTO1 = results.getFirst();
-        assertEquals(problem1.getProblemName(), resultDTO1.getProblem());
+        assertEquals(problem2.getProblemName(), resultDTO1.getProblem());
         assertEquals(algorithm1.getAlgorithmName(), resultDTO1.getAlgorithm());
         assertEquals(metric1.getMetricName(), resultDTO1.getMetric());
-        assertEquals(200, resultDTO1.getIteration());
+        assertEquals(100, resultDTO1.getIteration());
         assertEquals(400.0, resultDTO1.getResult().getMean(), 0.01);
-        assertEquals(400.0, resultDTO1.getResult().getMedian(), 0.01);
-        assertEquals(0.0, resultDTO1.getResult().getStdDev(), 0.01);
+        assertEquals(200.0, resultDTO1.getResult().getMedian(), 0.01);
+        assertEquals(355.9, resultDTO1.getResult().getStdDev(), 0.01);
 
-        // TODO:
-        /*
         AggregatedExperimentResultDTO resultDTO2 = results.get(1);
         assertEquals(problem2.getProblemName(), resultDTO2.getProblem());
-        assertEquals(algorithm2.getAlgorithmName(), resultDTO2.getAlgorithm());
-        assertEquals(metric2.getMetricName(), resultDTO2.getMetric());
+        assertEquals(algorithm1.getAlgorithmName(), resultDTO2.getAlgorithm());
+        assertEquals(metric1.getMetricName(), resultDTO2.getMetric());
         assertEquals(200, resultDTO2.getIteration());
-        assertEquals(750.0, resultDTO2.getResult().getMean(), 0.01);
-        assertEquals(25.0, resultDTO2.getResult().getMedian(), 0.01);
-        assertEquals(0.0, resultDTO2.getResult().getStdDev(), 0.01);
-         */
+        assertEquals(333.33, resultDTO2.getResult().getMean(), 0.01);
+        assertEquals(300.0, resultDTO2.getResult().getMedian(), 0.01);
+        assertEquals(124.72, resultDTO2.getResult().getStdDev(), 0.01);
 
         verify(experimentRepository, times(1)).findAllById(experimentIds);
-//        verify(experimentResultsRepository, times(2)).findByExperimentId(anyLong());
+        verify(experimentResultsRepository, times(3)).findByExperimentId(anyLong());
     }
 
 }

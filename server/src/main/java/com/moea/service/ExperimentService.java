@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -145,18 +146,18 @@ public class ExperimentService {
     private List<AggregatedExperimentResultDTO> combineResults(CommonAttributes commonAttributes, Map<Long, List<ExperimentResult>> experimentsResults) {
         List<AggregatedExperimentResultDTO> results = new ArrayList<>();
 
-        for (Problem problem : commonAttributes.problems()) {
-            for (Algorithm algorithm : commonAttributes.algorithms()) {
-                for (ExperimentMetric metric : commonAttributes.metrics()) {
+        for (String problemName : commonAttributes.problemNames()) {
+            for (String algorithmName : commonAttributes.algorithmNames()) {
+                for (String metricName : commonAttributes.metricNames()) {
                     for (int iteration = ITERATION_INTERVAL; iteration <= commonAttributes.iterations(); iteration += ITERATION_INTERVAL) {
                         List<Double> resultsForIteration = new ArrayList<>();
                         for (var entry : experimentsResults.entrySet()) {
                             List<ExperimentResult> experimentResults = entry.getValue();
                             int iteration_ = iteration;
                             Optional<ExperimentResult> result = experimentResults.stream()
-                                    .filter(r -> r.getProblem().equals(problem.getProblemName())
-                                            && r.getAlgorithm().equals(algorithm.getAlgorithmName())
-                                            && r.getMetric().equals(metric.getMetricName())
+                                    .filter(r -> r.getProblem().equals(problemName)
+                                            && r.getAlgorithm().equals(algorithmName)
+                                            && r.getMetric().equals(metricName)
                                             && r.getIteration() == iteration_)
                                     .findFirst();
 
@@ -175,9 +176,9 @@ public class ExperimentService {
                                     .build();
 
                             AggregatedExperimentResultDTO result = AggregatedExperimentResultDTO.builder()
-                                    .problem(problem.getProblemName())
-                                    .algorithm(algorithm.getAlgorithmName())
-                                    .metric(metric.getMetricName())
+                                    .problem(problemName)
+                                    .algorithm(algorithmName)
+                                    .metric(metricName)
                                     .iteration(iteration)
                                     .result(stats)
                                     .build();
@@ -198,40 +199,37 @@ public class ExperimentService {
                 .reduce(Integer::min)
                 .orElse(0);
 
-        List<Problem> commonProblems = experiments.stream()
+        List<String> commonProblems = experiments.stream()
                 .map(Experiment::getProblems)
-                .flatMap(Collection::stream)
-                .map(Problem::getProblemName)
-                .distinct()
-                .map(problemName -> experiments.getFirst().getProblems().stream()
-                        .filter(p -> p.getProblemName().equals(problemName))
-                        .findFirst().orElseThrow())
-                .toList();
+                .map(problems -> problems.stream().map(Problem::getProblemName).collect(Collectors.toSet()))
+                .reduce((p1, p2) -> {
+                    p1.retainAll(p2);
+                    return p1;
+                })
+                .get().stream().toList();
 
-        List<Algorithm> commonAlgorithms = experiments.stream()
+        List<String> commonAlgorithms = experiments.stream()
                 .map(Experiment::getAlgorithms)
-                .flatMap(Collection::stream)
-                .map(Algorithm::getAlgorithmName)
-                .distinct()
-                .map(algorithmName -> experiments.getFirst().getAlgorithms().stream()
-                        .filter(a -> a.getAlgorithmName().equals(algorithmName))
-                        .findFirst().orElseThrow())
-                .toList();
+                .map(algorithms -> algorithms.stream().map(Algorithm::getAlgorithmName).collect(Collectors.toSet()))
+                .reduce((a1, a2) -> {
+                    a1.retainAll(a2);
+                    return a1;
+                })
+                .get().stream().toList();
 
-        List<ExperimentMetric> commonMetrics = experiments.stream()
+        List<String> commonMetrics = experiments.stream()
                 .map(Experiment::getMetrics)
-                .flatMap(Collection::stream)
-                .map(ExperimentMetric::getMetricName)
-                .distinct()
-                .map(metricName -> experiments.getFirst().getMetrics().stream()
-                        .filter(m -> m.getMetricName().equals(metricName))
-                        .findFirst().orElseThrow())
-                .toList();
+                .map(metrics -> metrics.stream().map(ExperimentMetric::getMetricName).collect(Collectors.toSet()))
+                .reduce((m1, m2) -> {
+                    m1.retainAll(m2);
+                    return m1;
+                })
+                .get().stream().toList();
 
         return new CommonAttributes(iterations, commonProblems, commonAlgorithms, commonMetrics);
     }
 
-    private record CommonAttributes(int iterations, List<Problem> problems, List<Algorithm> algorithms, List<ExperimentMetric> metrics) {}
+    private record CommonAttributes(int iterations, List<String> problemNames, List<String> algorithmNames, List<String> metricNames) {}
 
     private double computeStandardDeviation(List<Double> numbers, double mean) {
         double sum = 0;

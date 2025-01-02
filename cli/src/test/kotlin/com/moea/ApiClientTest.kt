@@ -1,5 +1,6 @@
 package com.moea
 
+import com.moea.helpers.ExperimentFilter
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.MockResponse
 import org.junit.After
@@ -47,7 +48,8 @@ class ApiClientTest : BaseTest() {
         mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
 
         runBlocking {
-            val experiments = apiClient.getExperimentList()
+            val filter = ExperimentFilter()
+            val experiments = apiClient.getExperimentList(filter)
 
             assertEquals(2, experiments.size)
             assertEquals(1, experiments[0].id)
@@ -121,7 +123,7 @@ class ApiClientTest : BaseTest() {
 
     @Test
     fun `test createExperiment`() {
-        val responseBody = """1"""
+        val responseBody = """[1, 2]"""
         mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
 
         runBlocking {
@@ -131,9 +133,85 @@ class ApiClientTest : BaseTest() {
                 problems = listOf("UF1", "DTLZ2_2"),
                 metrics = listOf("Hypervolume", "Spacing")
             )
-            val experimentId = apiClient.createExperiment(newExperiment)
+            val invocations = 2
+            val experimentIds = apiClient.createExperiment(newExperiment, invocations)
 
-            assertEquals(1, experimentId)
+            assertEquals(listOf(1, 2), experimentIds)
+        }
+    }
+
+    @Test
+    fun `test uniqueExperiments`() {
+        val responseBody = """
+            [
+                {
+                    "id": 1,
+                    "evaluations": 1000,
+                    "status": "RUNNING",
+                    "algorithms": ["algo1", "algo2"],
+                    "problems": ["problem1"],
+                    "metrics": ["metric1"]
+                }
+            ]
+        """
+        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+
+        runBlocking {
+            val experiments = apiClient.getUniqueExperiments()
+
+            assertEquals(1, experiments.size)
+            assertEquals(1, experiments[0].id)
+            assertEquals(1000, experiments[0].evaluations)
+            assertEquals("RUNNING", experiments[0].status)
+            assertEquals(listOf("algo1", "algo2"), experiments[0].algorithms)
+            assertEquals(listOf("problem1"), experiments[0].problems)
+            assertEquals(listOf("metric1"), experiments[0].metrics)
+        }
+    }
+
+    @Test
+    fun `test repeatExperiment`() {
+        val responseBody = """[2, 3]"""
+        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+
+        runBlocking {
+            val experimentIds = apiClient.repeatExperiment(1, 2)
+
+            assertEquals(listOf(2, 3), experimentIds)
+        }
+    }
+
+    @Test
+    fun `test getExperimentResultsAggregated`() {
+        val responseBody = """
+            [
+                {
+                    "problem": "UF1",
+                    "algorithm": "NSGAII",
+                    "metric": "Hypervolume",
+                    "iteration": 100,
+                    "result": {
+                        "mean": 1.0,
+                        "median": 420.0,
+                        "stdDev": 3.0
+                    }
+                }
+            ]
+        """.trimIndent()
+
+        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+
+        runBlocking {
+            val experimentResults = apiClient.getAggregatedExperimentsResults(listOf(1))
+
+            assertEquals(1, experimentResults.size)
+            assertEquals("UF1", experimentResults[0].problem)
+            assertEquals("NSGAII", experimentResults[0].algorithm)
+            assertEquals("Hypervolume", experimentResults[0].metric)
+            assertEquals(100, experimentResults[0].iteration)
+            assertEquals(1.0, experimentResults[0].result.mean)
+            assertEquals(420.0, experimentResults[0].result.median)
+            assertEquals(3.0, experimentResults[0].result.stdDev)
         }
     }
 }

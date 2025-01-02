@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public interface ExperimentRepositoryCustom {
 
-    List<Experiment> findDistinctByGroupId(Collection<UUID> groupIds);
+    List<Experiment> findDistinctByGroupId();
 
 }

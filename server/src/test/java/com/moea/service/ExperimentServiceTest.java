@@ -243,7 +243,7 @@ public class ExperimentServiceTest {
         Experiment experiment1 = Experiment.builder().id(1L).groupId(groupId1).build();
         Experiment experiment2 = Experiment.builder().id(2L).groupId(groupId2).build();
 
-        when(experimentRepository.findDistinctByGroupId(anyList())).thenReturn(List.of(experiment1, experiment2));
+        when(experimentRepository.findDistinctByGroupId()).thenReturn(List.of(experiment1, experiment2));
 
         // When
         List<Experiment> uniqueExperiments = experimentService.getUniqueExperiments();
@@ -251,7 +251,7 @@ public class ExperimentServiceTest {
         // Then
         assertNotNull(uniqueExperiments);
         assertEquals(2, uniqueExperiments.size());
-        verify(experimentRepository, times(1)).findDistinctByGroupId(anyList());
+        verify(experimentRepository, times(1)).findDistinctByGroupId();
     }
 
     @Test

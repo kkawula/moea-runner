@@ -1,16 +1,14 @@
 package com.moea.service;
 
 import com.moea.ExperimentStatus;
-import com.moea.dto.AggregatedExperimentResultDTO;
-import com.moea.dto.AggregatedStats;
-import com.moea.dto.AlgorithmProblemResult;
-import com.moea.dto.ExperimentDTO;
+import com.moea.dto.*;
 import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.*;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
 import com.moea.specifications.ExperimentSpecifications;
 import com.moea.util.ExperimentMapper;
+import com.moea.util.ExperimentsResultsAggregator;
 import com.moea.util.ExperimentValidator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -20,6 +18,8 @@ import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -31,15 +31,16 @@ public class ExperimentService {
     private final ExperimentValidator experimentValidator;
     private final ExperimentMapper experimentMapper;
     private final ExperimentSpecifications experimentSpecifications;
-    private final static int ITERATION_INTERVAL = 100;
+    private final ExperimentsResultsAggregator experimentsResultsAggregator;
 
-    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications) {
+    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications, ExperimentsResultsAggregator experimentsResultsAggregator) {
         this.experimentRepository = experimentRepository;
         this.experimentResultsRepository = experimentResultsRepository;
         this.experimentRunnerService = experimentRunnerService;
         this.experimentValidator = experimentValidator;
         this.experimentMapper = experimentMapper;
         this.experimentSpecifications = experimentSpecifications;
+        this.experimentsResultsAggregator = experimentsResultsAggregator;
     }
 
     public Long createExperiment(ExperimentDTO experimentDTO) {
@@ -55,12 +56,6 @@ public class ExperimentService {
                 .subscribe();
 
         return newExperimentID;
-    }
-
-    public Long repeatExperiment(Long id) {
-        Experiment experiment = experimentRepository.findById(id).orElseThrow(ExperimentNotFoundException::new);
-        ExperimentDTO experimentDTO = experimentMapper.toRequestDTO(experiment);
-        return createExperiment(experimentDTO);
     }
 
     private Observable<AlgorithmProblemResult> createAndRunExperiment(Long ExperimentId) {
@@ -102,11 +97,18 @@ public class ExperimentService {
         }).subscribeOn(Schedulers.computation());
     }
 
-    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, Date fromDate, Date toDate) {
+    public Long repeatExperiment(Long id) {
+        Experiment experiment = experimentRepository.findById(id).orElseThrow(ExperimentNotFoundException::new);
+        ExperimentDTO experimentDTO = experimentMapper.toRequestDTO(experiment);
+        return createExperiment(experimentDTO);
+    }
+
+    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, String metric, String fromDate, String toDate) throws ParseException {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withAlgorithm(algorithmName))
                 .and(experimentSpecifications.withProblem(problemName))
                 .and(experimentSpecifications.withStatus(status))
-                .and(experimentSpecifications.withinDateRange(fromDate, toDate));
+                .and(experimentSpecifications.withMetric(metric))
+                .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
 
         return experimentRepository.findAll(spec);
     }
@@ -127,8 +129,6 @@ public class ExperimentService {
             throw new ExperimentNotFoundException();
         }
 
-        CommonAttributes commonAttributes = getCommonAttributes(experiments);
-
         Map<Long, List<ExperimentResult>> experimentsResults = new HashMap<>();
 
         for (Experiment experiment : experiments) {
@@ -136,106 +136,7 @@ public class ExperimentService {
             experimentsResults.put(experiment.getId(), experimentResults);
         }
 
-        return combineResults(commonAttributes, experimentsResults);
-    }
-
-    private List<AggregatedExperimentResultDTO> combineResults(CommonAttributes commonAttributes, Map<Long, List<ExperimentResult>> experimentsResults) {
-        List<AggregatedExperimentResultDTO> results = new ArrayList<>();
-
-        for (Problem problem : commonAttributes.problems()) {
-            for (Algorithm algorithm : commonAttributes.algorithms()) {
-                for (ExperimentMetric metric : commonAttributes.metrics()) {
-                    for (int iteration = ITERATION_INTERVAL; iteration <= commonAttributes.iterations(); iteration += ITERATION_INTERVAL) {
-                        List<Double> resultsForIteration = new ArrayList<>();
-                        for (var entry : experimentsResults.entrySet()) {
-                            List<ExperimentResult> experimentResults = entry.getValue();
-                            int iteration_ = iteration;
-                            Optional<ExperimentResult> result = experimentResults.stream()
-                                    .filter(r -> r.getProblem().equals(problem.getProblemName())
-                                            && r.getAlgorithm().equals(algorithm.getAlgorithmName())
-                                            && r.getMetric().equals(metric.getMetricName())
-                                            && r.getIteration() == iteration_)
-                                    .findFirst();
-
-                            result.ifPresent(experimentResult -> resultsForIteration.add(experimentResult.getResult()));
-                        }
-
-                        if (!resultsForIteration.isEmpty()) {
-                            double mean = resultsForIteration.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-                            double median = resultsForIteration.stream().sorted().skip(resultsForIteration.size() / 2).findFirst().orElse(0.0);
-                            double stdDev = computeStandardDeviation(resultsForIteration, mean);
-
-                            AggregatedStats stats = AggregatedStats.builder()
-                                    .mean(mean)
-                                    .median(median)
-                                    .stdDev(stdDev)
-                                    .build();
-
-                            AggregatedExperimentResultDTO result = AggregatedExperimentResultDTO.builder()
-                                    .problem(problem.getProblemName())
-                                    .algorithm(algorithm.getAlgorithmName())
-                                    .metric(metric.getMetricName())
-                                    .iteration(iteration)
-                                    .result(stats)
-                                    .build();
-
-                            results.add(result);
-                        }
-                    }
-                }
-            }
-        }
-
-        return results;
-    }
-
-    private CommonAttributes getCommonAttributes(List<Experiment> experiments) {
-        int iterations = experiments.stream()
-                .map(Experiment::getEvaluations)
-                .reduce(Integer::min)
-                .orElse(0);
-
-        List<Problem> commonProblems = experiments.stream()
-                .map(Experiment::getProblems)
-                .flatMap(Collection::stream)
-                .map(Problem::getProblemName)
-                .distinct()
-                .map(problemName -> experiments.getFirst().getProblems().stream()
-                        .filter(p -> p.getProblemName().equals(problemName))
-                        .findFirst().orElseThrow())
-                .toList();
-
-        List<Algorithm> commonAlgorithms = experiments.stream()
-                .map(Experiment::getAlgorithms)
-                .flatMap(Collection::stream)
-                .map(Algorithm::getAlgorithmName)
-                .distinct()
-                .map(algorithmName -> experiments.getFirst().getAlgorithms().stream()
-                        .filter(a -> a.getAlgorithmName().equals(algorithmName))
-                        .findFirst().orElseThrow())
-                .toList();
-
-        List<ExperimentMetric> commonMetrics = experiments.stream()
-                .map(Experiment::getMetrics)
-                .flatMap(Collection::stream)
-                .map(ExperimentMetric::getMetricName)
-                .distinct()
-                .map(metricName -> experiments.getFirst().getMetrics().stream()
-                        .filter(m -> m.getMetricName().equals(metricName))
-                        .findFirst().orElseThrow())
-                .toList();
-
-        return new CommonAttributes(iterations, commonProblems, commonAlgorithms, commonMetrics);
-    }
-
-    private record CommonAttributes(int iterations, List<Problem> problems, List<Algorithm> algorithms, List<ExperimentMetric> metrics) {}
-
-    private double computeStandardDeviation(List<Double> numbers, double mean) {
-        double sum = 0;
-        for (double result : numbers) {
-            sum += Math.pow(result - mean, 2);
-        }
-        return Math.sqrt(sum / numbers.size());
+        return experimentsResultsAggregator.combineResults(experiments, experimentsResults);
     }
 
     public ExperimentStatus getExperimentStatus(Long id) {
@@ -247,5 +148,10 @@ public class ExperimentService {
         Experiment experiment = experimentRepository.findById(experimentId).orElseThrow(ExperimentNotFoundException::new);
         experiment.setStatus(status);
         experimentRepository.save(experiment);
+    }
+
+    public static Date convertStringToDate(String dateString) throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateString == null ? null : dateFormat.parse(dateString);
     }
 }

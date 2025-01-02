@@ -4,6 +4,7 @@ import com.moea.model.Algorithm;
 import com.moea.model.Experiment;
 import com.moea.model.Problem;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -27,8 +28,18 @@ public class ExperimentSpecifications {
             if (problemName == null) {
                 return null;
             }
-            Join<Experiment, Problem> problemJoin = root.join("problems");
+            Join<Experiment, Problem> problemJoin = root.join("problems", JoinType.LEFT);
             return criteriaBuilder.equal(problemJoin.get("problemName"), problemName);
+        };
+    }
+
+    public Specification<Experiment> withMetric(String metricName) {
+        return (root, query, criteriaBuilder) -> {
+            if (metricName == null) {
+                return null;
+            }
+            Join<Experiment, Problem> problemJoin = root.join("metrics");
+            return criteriaBuilder.equal(problemJoin.get("metricName"), metricName);
         };
     }
 

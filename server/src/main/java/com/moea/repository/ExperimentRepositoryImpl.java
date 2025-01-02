@@ -19,17 +19,15 @@ public class ExperimentRepositoryImpl implements ExperimentRepositoryCustom {
     }
 
     @Override
-    public List<Experiment> findDistinctByGroupId(Collection<UUID> groupIds) {
+    public List<Experiment> findDistinctByGroupId() {
         String jpql = """
                     SELECT e FROM Experiment e WHERE e.id IN (
-                        SELECT MIN(e2.id) FROM Experiment e2 WHERE e2.groupId IN :groupIds GROUP BY e2.groupId
-                    )
+                                SELECT MIN(e.id) FROM Experiment e GROUP BY e.groupId
+                                )
                 """;
 
         TypedQuery<Experiment> query = entityManager.createQuery(jpql, Experiment.class);
-        query.setParameter("groupIds", groupIds);
 
         return query.getResultList();
     }
-
 }

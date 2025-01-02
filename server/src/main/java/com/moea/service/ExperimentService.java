@@ -124,7 +124,7 @@ public class ExperimentService {
     }
 
     public List<Experiment> getUniqueExperiments() {
-        return experimentRepository.findDistinctByGroupId(List.of());
+        return experimentRepository.findDistinctByGroupId();
     }
 
     public List<ExperimentResult> getExperimentResults(Long id) {

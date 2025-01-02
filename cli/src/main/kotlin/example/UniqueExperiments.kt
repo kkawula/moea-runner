@@ -5,12 +5,14 @@ import com.moea.helpers.prettyRepr
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
-    println("Getting experiment list...")
+    println("Getting unique experiments...")
 
     val apiClient = ApiClient()
-    val experiments = apiClient.getExperimentList()
+    val uniqueExperiments = apiClient.getUniqueExperiments()
 
-    experiments.forEach {
+    uniqueExperiments.forEach {
         println(it.prettyRepr())
     }
+
+    apiClient.close()
 }

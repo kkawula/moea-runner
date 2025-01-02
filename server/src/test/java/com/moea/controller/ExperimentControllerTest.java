@@ -206,13 +206,13 @@ public class ExperimentControllerTest {
     public void testCreateExperiment_WithInvocations_ExpectedMultipleExperimentIds() throws Exception {
         //given
         String requestBody = """
-            {
-              "evaluations": 10,
-              "algorithms": ["NSGAII", "GDE3"],
-              "problems": ["UF1", "DTLZ2_2"],
-              "metrics": ["Hypervolume", "Spacing"]
-            }
-            """;
+                {
+                  "evaluations": 10,
+                  "algorithms": ["NSGAII", "GDE3"],
+                  "problems": ["UF1", "DTLZ2_2"],
+                  "metrics": ["Hypervolume", "Spacing"]
+                }
+                """;
 
         //when
         when(experimentService.createExperiment(any(ExperimentDTO.class))).thenReturn(1L, 2L, 3L, 4L);

@@ -1,15 +1,20 @@
 package com.moea.service;
 
 import com.moea.ExperimentStatus;
-import com.moea.dto.*;
+import com.moea.dto.AggregatedExperimentResultDTO;
+import com.moea.dto.AlgorithmProblemResult;
+import com.moea.dto.ExperimentDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
-import com.moea.model.*;
+import com.moea.model.Algorithm;
+import com.moea.model.Experiment;
+import com.moea.model.ExperimentResult;
+import com.moea.model.Problem;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
 import com.moea.specifications.ExperimentSpecifications;
 import com.moea.util.ExperimentMapper;
-import com.moea.util.ExperimentsResultsAggregator;
 import com.moea.util.ExperimentValidator;
+import com.moea.util.ExperimentsResultsAggregator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.moeaframework.Executor;
@@ -41,6 +46,11 @@ public class ExperimentService {
         this.experimentMapper = experimentMapper;
         this.experimentSpecifications = experimentSpecifications;
         this.experimentsResultsAggregator = experimentsResultsAggregator;
+    }
+
+    public static Date convertStringToDate(String dateString) throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateString == null ? null : dateFormat.parse(dateString);
     }
 
     public Long createExperiment(ExperimentDTO experimentDTO) {
@@ -148,10 +158,5 @@ public class ExperimentService {
         Experiment experiment = experimentRepository.findById(experimentId).orElseThrow(ExperimentNotFoundException::new);
         experiment.setStatus(status);
         experimentRepository.save(experiment);
-    }
-
-    public static Date convertStringToDate(String dateString) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return dateString == null ? null : dateFormat.parse(dateString);
     }
 }

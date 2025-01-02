@@ -71,10 +71,21 @@ public class TestConst {
                     .build()
     );
 
-    public static List<String> getAlgorithms() { return ALGORITHMS; }
-    public static List<String> getProblems() { return PROBLEMS; }
-    public static List<String> getMetrics() { return METRICS; }
-    public static List<ExperimentDTO> getExperiments() { return EXPERIMENTS; }
+    public static List<String> getAlgorithms() {
+        return ALGORITHMS;
+    }
+
+    public static List<String> getProblems() {
+        return PROBLEMS;
+    }
+
+    public static List<String> getMetrics() {
+        return METRICS;
+    }
+
+    public static List<ExperimentDTO> getExperiments() {
+        return EXPERIMENTS;
+    }
 
     private static Date createDate(int year, int month, int day, int hour, int minute, int second) {
         Calendar calendar = Calendar.getInstance();

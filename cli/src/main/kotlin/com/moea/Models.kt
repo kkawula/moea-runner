@@ -23,3 +23,17 @@ data class Experiment(
     val problems: List<String>,
     val metrics: List<String>,
 )
+
+data class AggregatedStats(
+    val mean: Double,
+    val median: Double,
+    val stdDev: Double,
+)
+
+data class AggregatedExperimentResult(
+    val problem: String,
+    val algorithm: String,
+    val metric: String,
+    val iteration: Int,
+    val result: AggregatedStats,
+)

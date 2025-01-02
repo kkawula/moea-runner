@@ -6,10 +6,7 @@ import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.optionalValue
-import com.moea.commands.CreateExperimentCommand
-import com.moea.commands.GetExperimentResultsCommand
-import com.moea.commands.GetExperimentStatusCommand
-import com.moea.commands.ListExperimentsCommand
+import com.moea.commands.*
 import com.moea.helpers.BASE_URL
 import com.moea.helpers.CommonArgs
 
@@ -31,6 +28,9 @@ fun main(args: Array<String>) {
             GetExperimentResultsCommand(),
             GetExperimentStatusCommand(),
             CreateExperimentCommand(),
+            RepeatExperimentCommand(),
+            GetUniqueExperimentsCommand(),
+            GetAggregatedExperimentsResultsCommand(),
         )
         .main(args)
 }

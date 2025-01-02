@@ -11,4 +11,6 @@ fun main() = runBlocking {
     val experimentResults = apiClient.getExperimentResults(1)
 
     printFormattedResults(experimentResults)
+
+    apiClient.close()
 }

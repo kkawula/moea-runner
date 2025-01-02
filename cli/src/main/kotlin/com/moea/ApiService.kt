@@ -1,14 +1,18 @@
 package com.moea
 
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
+import retrofit2.http.*
 
 
 interface ApiService {
     @GET("experiments")
-    suspend fun getExperimentList(): List<Experiment>
+    suspend fun getExperimentList(
+        @Query("algorithmName") algorithmName: String? = null,
+        @Query("problemName") problemName: String? = null,
+        @Query("metricName") metricName: String? = null,
+        @Query("status") status: String? = null,
+        @Query("fromDate") fromDate: String? = null,
+        @Query("toDate") toDate: String? = null
+    ): List<Experiment>
 
     @GET("experiments/{id}/results")
     suspend fun getExperimentResults(@Path("id") id: Int): List<ExperimentResult>
@@ -17,5 +21,14 @@ interface ApiService {
     suspend fun getExperimentStatus(@Path("id") id: Int): String
 
     @POST("experiments")
-    suspend fun createExperiment(@Body experiment: NewExperiment): Int
+    suspend fun createExperiment(@Body experiment: NewExperiment, @Query("invocations") invocations: Int?): List<Int>
+
+    @POST("experiments/{id}/repeat")
+    suspend fun repeatExperiment(@Path("id") id: Int, @Query("invocations") invocations: Int?): List<Int>
+
+    @GET("experiments/unique")
+    suspend fun getUniqueExperiments(): List<Experiment>
+
+    @GET("experiments/aggregated-results")
+    suspend fun getAggregatedExperimentsResults(@Query("experimentIds") experimentIds: List<Int>): List<AggregatedExperimentResult>
 }

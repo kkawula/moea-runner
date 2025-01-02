@@ -1,6 +1,7 @@
 package example
 
 import com.moea.ApiClient
+import com.moea.helpers.prettyRepr
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
@@ -9,7 +10,9 @@ fun main() = runBlocking {
     val apiClient = ApiClient()
     val uniqueExperiments = apiClient.getUniqueExperiments()
 
-    println(uniqueExperiments)
+    uniqueExperiments.forEach {
+        println(it.prettyRepr())
+    }
 
     apiClient.close()
 }

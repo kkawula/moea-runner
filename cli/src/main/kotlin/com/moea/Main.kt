@@ -29,7 +29,8 @@ fun main(args: Array<String>) {
             GetExperimentStatusCommand(),
             CreateExperimentCommand(),
             RepeatExperimentCommand(),
-            GetUniqueExperimentsCommand()
+            GetUniqueExperimentsCommand(),
+            GetAggregatedExperimentsResultsCommand(),
         )
         .main(args)
 }

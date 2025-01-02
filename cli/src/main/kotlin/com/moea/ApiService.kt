@@ -29,4 +29,6 @@ interface ApiService {
     @GET("experiments/unique")
     suspend fun getUniqueExperiments(): List<Experiment>
 
+    @GET("experiments/aggregated-results")
+    suspend fun getAggregatedExperimentsResults(@Query("experimentIds") experimentIds: List<Int>): List<AggregatedExperimentResult>
 }

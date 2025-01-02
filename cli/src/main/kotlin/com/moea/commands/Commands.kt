@@ -3,6 +3,7 @@ package com.moea.commands
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
@@ -159,6 +160,28 @@ class GetUniqueExperimentsCommand : CliktCommand("unique-experiments") {
                 experiments.forEach {
                     println(it.prettyRepr())
                 }
+            }
+        } finally {
+            apiClient.close()
+        }
+    }
+}
+
+class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experiments-results") {
+    private val commonArgs by requireObject<CommonArgs>()
+
+    private val experimentIds by argument("experiment-ids", help = "Space-separated list of experiment ids").int().multiple(required = true)
+
+
+    override fun run(): Unit = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
+        try {
+            val result = sendRequest(apiClient) { client ->
+                client.getAggregatedExperimentsResults(experimentIds)
+            }
+            result.onSuccess { results ->
+                printFormattedAggregatedResults(results)
             }
         } finally {
             apiClient.close()

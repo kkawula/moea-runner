@@ -3,6 +3,9 @@ package com.moea.helpers
 import com.moea.AggregatedExperimentResult
 import com.moea.Experiment
 import com.moea.ExperimentResult
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 fun Experiment.prettyRepr(): String {
     return "Experiment $id\n" +
@@ -70,4 +73,15 @@ fun printFormattedAggregatedResults(results: List<AggregatedExperimentResult>) {
             println(row.joinToString(" ") { it.padEnd(23) })
         }
     }
+}
+
+fun convertDate(input: String): String {
+    try {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        LocalDateTime.parse(input, formatter)
+    } catch (e: DateTimeParseException) {
+        throw IllegalArgumentException("Invalid date format. Expected \"yyyy-MM-dd HH:mm:ss\"")
+    }
+
+    return input
 }

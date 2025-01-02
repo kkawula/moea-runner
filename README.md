@@ -27,7 +27,7 @@ To start server with created binary, run the following command:
 ```
 
 ```shell
-./cli/build/install/moea-client/bin/moea-client experiments-list --algorithm-name NSGAII --problem-name UF1 --status FINISHED --from-date 1/1/1410 --to-date 1/1/2077
+./cli/build/install/moea-client/bin/moea-client experiments-list --algorithm-name NSGAII --metric-name Hypervolume --problem-name UF1 --status FINISHED --from-date "1410-01-01 11:59:59" --to-date "2077-01-01 11:59:59"
 ```
 
 ```shell
@@ -41,6 +41,15 @@ To start server with created binary, run the following command:
 ```shell
 ./cli/build/install/moea-client/bin/moea-client experiment-repeat 1 --invocations 2
 ```
+
+```shell
+./cli/build/install/moea-client/bin/moea-client unique-experiments
+```
+
+```shell
+./cli/build/install/moea-client/bin/moea-client aggregated-experiments-results 1 2
+```
+
 ## 4. Clean the environment
 
 ```shell

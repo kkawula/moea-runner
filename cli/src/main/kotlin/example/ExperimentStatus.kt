@@ -10,4 +10,6 @@ fun main() = runBlocking {
     val experimentStatus = apiClient.getExperimentStatus(1)
 
     println(experimentStatus)
+
+    apiClient.close()
 }

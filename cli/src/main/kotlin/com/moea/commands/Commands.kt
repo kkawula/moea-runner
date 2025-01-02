@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
@@ -20,8 +21,15 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
     private val problemName by option("--problem-name", help = "Filter by problem name")
     private val metricName by option("--metric-name", help = "Filter by metric name")
     private val status by option("--status", help = "Filter by status")
-    private val fromDate by option("--from-date", help = "Filter from date")
-    private val toDate by option("--to-date", help = "Filter to date")
+    private val fromDate by option(
+        "--from-date",
+        help = "Filter from date (\"yyyy-MM-dd HH:mm:ss\")"
+    ).convert { convertDate(it) }
+    private val toDate by option("--to-date", help = "Filter to date (\"yyyy-MM-dd HH:mm:ss\")").convert {
+        convertDate(
+            it
+        )
+    }
 
     override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)

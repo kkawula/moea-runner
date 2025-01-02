@@ -8,13 +8,13 @@ import kotlinx.coroutines.runBlocking
 fun main() = runBlocking {
     println("Getting experiment list...")
 
-
     val filter = ExperimentFilter(
         algorithmName = "NSGAII",
         problemName = "UF1",
+        metricName = "Hypervolume",
         status = "FINISHED",
-        fromDate = "1/1/1410",
-        toDate = "1/1/2077"
+        fromDate = "1410-01-01 11:59:59",
+        toDate = "2077-12-31 11:59:59"
     )
 
     val apiClient = ApiClient()
@@ -23,4 +23,6 @@ fun main() = runBlocking {
     experiments.forEach {
         println(it.prettyRepr())
     }
+
+    apiClient.close()
 }

@@ -18,4 +18,6 @@ fun main() = runBlocking {
 
     val createdExperiment = apiClient.createExperiment(experiment, invocations)
     println(createdExperiment)
+
+    apiClient.close()
 }

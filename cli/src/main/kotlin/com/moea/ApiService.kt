@@ -8,6 +8,7 @@ interface ApiService {
     suspend fun getExperimentList(
         @Query("algorithmName") algorithmName: String? = null,
         @Query("problemName") problemName: String? = null,
+        @Query("metricName") metricName: String? = null,
         @Query("status") status: String? = null,
         @Query("fromDate") fromDate: String? = null,
         @Query("toDate") toDate: String? = null

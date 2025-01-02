@@ -39,6 +39,7 @@ class ApiClient(baseUrl: String = BASE_URL) {
     suspend fun getExperimentList(filter: ExperimentFilter) = apiService.getExperimentList(
         filter.algorithmName,
         filter.problemName,
+        filter.metricName,
         filter.status,
         filter.fromDate,
         filter.toDate

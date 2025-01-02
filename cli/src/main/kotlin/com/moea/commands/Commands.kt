@@ -17,6 +17,7 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
 
     private val algorithmName by option("--algorithm-name", help = "Filter by algorithm name")
     private val problemName by option("--problem-name", help = "Filter by problem name")
+    private val metricName by option("--metric-name", help = "Filter by metric name")
     private val status by option("--status", help = "Filter by status")
     private val fromDate by option("--from-date", help = "Filter from date")
     private val toDate by option("--to-date", help = "Filter to date")
@@ -26,6 +27,7 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
         val filter = ExperimentFilter(
             algorithmName = algorithmName,
             problemName = problemName,
+            metricName = metricName,
             status = status,
             fromDate = fromDate,
             toDate = toDate

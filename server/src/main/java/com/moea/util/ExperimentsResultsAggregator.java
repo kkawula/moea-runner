@@ -37,15 +37,7 @@ public class ExperimentsResultsAggregator {
                         }
 
                         if (!resultsForIteration.isEmpty()) {
-                            double mean = resultsForIteration.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-                            double median = resultsForIteration.stream().sorted().skip(resultsForIteration.size() / 2).findFirst().orElse(0.0);
-                            double stdDev = computeStandardDeviation(resultsForIteration, mean);
-
-                            AggregatedStats stats = AggregatedStats.builder()
-                                    .mean(mean)
-                                    .median(median)
-                                    .stdDev(stdDev)
-                                    .build();
+                            AggregatedStats stats = computeStatsForSingleIteration(resultsForIteration);
 
                             AggregatedExperimentResultDTO result = AggregatedExperimentResultDTO.builder()
                                     .problem(problemName)
@@ -63,6 +55,26 @@ public class ExperimentsResultsAggregator {
         }
 
         return results;
+    }
+
+    private AggregatedStats computeStatsForSingleIteration(List<Double> resultsForIteration) {
+        double mean = resultsForIteration.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+        double median = resultsForIteration.stream().sorted().skip(resultsForIteration.size() / 2).findFirst().orElse(0.0);
+        double stdDev = computeStandardDeviation(resultsForIteration, mean);
+
+        return AggregatedStats.builder()
+                .mean(mean)
+                .median(median)
+                .stdDev(stdDev)
+                .build();
+    }
+
+    private double computeStandardDeviation(List<Double> numbers, double mean) {
+        double sum = 0;
+        for (double result : numbers) {
+            sum += Math.pow(result - mean, 2);
+        }
+        return Math.sqrt(sum / numbers.size());
     }
 
     private ExperimentsCommonAttributes getCommonAttributes(List<Experiment> experiments) {
@@ -102,13 +114,5 @@ public class ExperimentsResultsAggregator {
                 .stream().toList();
 
         return new ExperimentsCommonAttributes(iterations, commonProblems, commonAlgorithms, commonMetrics);
-    }
-
-    private double computeStandardDeviation(List<Double> numbers, double mean) {
-        double sum = 0;
-        for (double result : numbers) {
-            sum += Math.pow(result - mean, 2);
-        }
-        return Math.sqrt(sum / numbers.size());
     }
 }

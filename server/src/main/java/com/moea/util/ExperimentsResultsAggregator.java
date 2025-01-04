@@ -23,33 +23,9 @@ public class ExperimentsResultsAggregator {
             for (String algorithmName : commonAttributes.algorithmNames()) {
                 for (String metricName : commonAttributes.metricNames()) {
                     for (int iteration = ITERATION_STEP; iteration <= commonAttributes.iterations(); iteration += ITERATION_STEP) {
-                        List<Double> resultsForIteration = new ArrayList<>();
-                        for (var entry : experimentsResults.entrySet()) {
-                            List<ExperimentResult> experimentResults = entry.getValue();
-                            int iteration_ = iteration;
-                            Optional<ExperimentResult> result = experimentResults.stream()
-                                    .filter(r -> r.getProblem().equals(problemName)
-                                            && r.getAlgorithm().equals(algorithmName)
-                                            && r.getMetric().equals(metricName)
-                                            && r.getIteration() == iteration_)
-                                    .findFirst();
-
-                            result.ifPresent(experimentResult -> resultsForIteration.add(experimentResult.getResult()));
-                        }
-
-                        if (!resultsForIteration.isEmpty()) {
-                            AggregatedStats stats = computeStatsForSingleIteration(resultsForIteration);
-
-                            AggregatedExperimentResultDTO result = AggregatedExperimentResultDTO.builder()
-                                    .problem(problemName)
-                                    .algorithm(algorithmName)
-                                    .metric(metricName)
-                                    .iteration(iteration)
-                                    .result(stats)
-                                    .build();
-
-                            results.add(result);
-                        }
+                        results.add(
+                                computeResultForSingleIteration(experimentsResults, problemName, algorithmName, metricName, iteration)
+                        );
                     }
                 }
             }
@@ -58,7 +34,37 @@ public class ExperimentsResultsAggregator {
         return results;
     }
 
-    private AggregatedStats computeStatsForSingleIteration(List<Double> resultsForIteration) {
+    private AggregatedExperimentResultDTO computeResultForSingleIteration(Map<Long, List<ExperimentResult>> experimentsResults, String problemName, String algorithmName, String metricName, int iteration) {
+        List<Double> resultsForIteration = new ArrayList<>();
+
+        for (var entry : experimentsResults.entrySet()) {
+            List<ExperimentResult> experimentResults = entry.getValue();
+            Optional<ExperimentResult> result = experimentResults.stream()
+                    .filter(r -> r.getProblem().equals(problemName)
+                            && r.getAlgorithm().equals(algorithmName)
+                            && r.getMetric().equals(metricName)
+                            && r.getIteration() == iteration)
+                    .findFirst();
+
+            result.ifPresent(experimentResult -> resultsForIteration.add(experimentResult.getResult()));
+        }
+
+        if (!resultsForIteration.isEmpty()) {
+            AggregatedStats stats = computeAggregatedStatsFromSingleIterationResults(resultsForIteration);
+
+            return AggregatedExperimentResultDTO.builder()
+                    .problem(problemName)
+                    .algorithm(algorithmName)
+                    .metric(metricName)
+                    .iteration(iteration)
+                    .result(stats)
+                    .build();
+        }
+
+        return AggregatedExperimentResultDTO.builder().build();
+    }
+
+    private AggregatedStats computeAggregatedStatsFromSingleIterationResults(List<Double> resultsForIteration) {
         DescriptiveStatistics stats = new DescriptiveStatistics();
         resultsForIteration.forEach(stats::addValue);
 

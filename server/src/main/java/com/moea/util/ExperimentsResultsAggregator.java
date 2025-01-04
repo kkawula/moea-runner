@@ -8,6 +8,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -85,36 +86,22 @@ public class ExperimentsResultsAggregator {
                 .reduce(Integer::min)
                 .orElse(0);
 
-        List<String> commonProblems = experiments.stream()
-                .map(Experiment::getProblems)
-                .map(problems -> problems.stream().map(Problem::getProblemName).collect(Collectors.toSet()))
-                .reduce((p1, p2) -> {
-                    p1.retainAll(p2);
-                    return p1;
-                })
-                .orElse(Collections.emptySet())
-                .stream().toList();
+        List<String> commonProblems = getCommonAttributeList(experiments, Experiment::getProblems, Problem::getProblemName);
+        List<String> commonAlgorithms = getCommonAttributeList(experiments, Experiment::getAlgorithms, Algorithm::getAlgorithmName);
+        List<String> commonMetrics = getCommonAttributeList(experiments, Experiment::getMetrics, ExperimentMetric::getMetricName);
 
-        List<String> commonAlgorithms = experiments.stream()
-                .map(Experiment::getAlgorithms)
-                .map(algorithms -> algorithms.stream().map(Algorithm::getAlgorithmName).collect(Collectors.toSet()))
+        return new ExperimentsCommonAttributes(iterations, commonProblems, commonAlgorithms, commonMetrics);
+    }
+
+    private <T> List<String> getCommonAttributeList(List<Experiment> experiments, Function<Experiment, List<T>> attributeExtractor, Function<T, String> attributeNameExtractor) {
+        return experiments.stream()
+                .map(attributeExtractor)
+                .map(attributes -> attributes.stream().map(attributeNameExtractor).collect(Collectors.toSet()))
                 .reduce((a1, a2) -> {
                     a1.retainAll(a2);
                     return a1;
                 })
                 .orElse(Collections.emptySet())
                 .stream().toList();
-
-        List<String> commonMetrics = experiments.stream()
-                .map(Experiment::getMetrics)
-                .map(metrics -> metrics.stream().map(ExperimentMetric::getMetricName).collect(Collectors.toSet()))
-                .reduce((m1, m2) -> {
-                    m1.retainAll(m2);
-                    return m1;
-                })
-                .orElse(Collections.emptySet())
-                .stream().toList();
-
-        return new ExperimentsCommonAttributes(iterations, commonProblems, commonAlgorithms, commonMetrics);
     }
 }

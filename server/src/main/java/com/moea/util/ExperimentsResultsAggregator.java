@@ -4,6 +4,7 @@ import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.AggregatedStats;
 import com.moea.dto.ExperimentsCommonAttributes;
 import com.moea.model.*;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -58,23 +59,18 @@ public class ExperimentsResultsAggregator {
     }
 
     private AggregatedStats computeStatsForSingleIteration(List<Double> resultsForIteration) {
-        double mean = resultsForIteration.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-        double median = resultsForIteration.stream().sorted().skip(resultsForIteration.size() / 2).findFirst().orElse(0.0);
-        double stdDev = computeStandardDeviation(resultsForIteration, mean);
+        DescriptiveStatistics stats = new DescriptiveStatistics();
+        resultsForIteration.forEach(stats::addValue);
+
+        double mean = stats.getMean();
+        double median = stats.getPercentile(50);
+        double stdDev = stats.getStandardDeviation();
 
         return AggregatedStats.builder()
                 .mean(mean)
                 .median(median)
                 .stdDev(stdDev)
                 .build();
-    }
-
-    private double computeStandardDeviation(List<Double> numbers, double mean) {
-        double sum = 0;
-        for (double result : numbers) {
-            sum += Math.pow(result - mean, 2);
-        }
-        return Math.sqrt(sum / numbers.size());
     }
 
     private ExperimentsCommonAttributes getCommonAttributes(List<Experiment> experiments) {

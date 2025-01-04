@@ -40,6 +40,9 @@ dependencies {
 
     // RxJava
     implementation("io.reactivex.rxjava3:rxjava:3.1.9")
+
+    // Math library
+    implementation("org.apache.commons:commons-math3:3.6.1")
 }
 
 configurations {

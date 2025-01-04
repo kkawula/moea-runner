@@ -196,7 +196,7 @@ class ExperimentsResultsAggregatorTest {
         assertEquals(100, resultDTO1.getIteration());
         assertEquals(400.0, resultDTO1.getResult().getMean(), 0.01);
         assertEquals(200.0, resultDTO1.getResult().getMedian(), 0.01);
-        assertEquals(355.9, resultDTO1.getResult().getStdDev(), 0.01);
+        assertEquals(435.89, resultDTO1.getResult().getStdDev(), 0.01);
 
         AggregatedExperimentResultDTO resultDTO2 = results.get(1);
         assertEquals(problem2.getProblemName(), resultDTO2.getProblem());
@@ -205,7 +205,7 @@ class ExperimentsResultsAggregatorTest {
         assertEquals(200, resultDTO2.getIteration());
         assertEquals(333.33, resultDTO2.getResult().getMean(), 0.01);
         assertEquals(300.0, resultDTO2.getResult().getMedian(), 0.01);
-        assertEquals(124.72, resultDTO2.getResult().getStdDev(), 0.01);
+        assertEquals(152.75, resultDTO2.getResult().getStdDev(), 0.01);
     }
 
     @Test

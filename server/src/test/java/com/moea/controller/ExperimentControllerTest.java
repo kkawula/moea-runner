@@ -1,16 +1,12 @@
 package com.moea.controller;
 
 import com.moea.ExperimentStatus;
-import com.moea.dto.AggregatedExperimentResultDTO;
-import com.moea.dto.AggregatedStats;
-import com.moea.dto.AlgorithmProblemResult;
-import com.moea.dto.ExperimentDTO;
+import com.moea.dto.*;
 import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.Experiment;
 import com.moea.model.ExperimentResult;
 import com.moea.service.ExperimentService;
 import com.moea.util.ExperimentMapper;
-import io.reactivex.rxjava3.core.Observable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -78,8 +74,6 @@ public class ExperimentControllerTest {
                 .metrics(List.of("Hypervolume", "Spacing"))
                 .build();
 
-        Observable<AlgorithmProblemResult> ob = Observable.just(new AlgorithmProblemResult());
-
         String requestBody = """
                 {
                   "evaluations": 10,
@@ -100,6 +94,7 @@ public class ExperimentControllerTest {
 
         //when
         when(experimentService.createExperiment(any(ExperimentDTO.class))).thenReturn(1L);
+        when(experimentMapper.toDto(any(ExperimentRequestDTO.class))).thenReturn(experimentDTO);
 
         //then
         mockMvc.perform(post("/experiments")
@@ -205,6 +200,13 @@ public class ExperimentControllerTest {
     @Test
     public void testCreateExperiment_WithInvocations_ExpectedMultipleExperimentIds() throws Exception {
         //given
+        ExperimentDTO experimentDTO = ExperimentDTO.builder()
+                .evaluations(10)
+                .algorithms(List.of("NSGAII", "GDE3"))
+                .problems(List.of("UF1", "DTLZ2_2"))
+                .metrics(List.of("Hypervolume", "Spacing"))
+                .build();
+
         String requestBody = """
                 {
                   "evaluations": 10,
@@ -216,6 +218,7 @@ public class ExperimentControllerTest {
 
         //when
         when(experimentService.createExperiment(any(ExperimentDTO.class))).thenReturn(1L, 2L, 3L, 4L);
+        when(experimentMapper.toDto(any(ExperimentRequestDTO.class))).thenReturn(experimentDTO);
 
         //then
         mockMvc.perform(post("/experiments")

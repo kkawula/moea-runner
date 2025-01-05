@@ -2,6 +2,7 @@ package com.moea.util;
 
 import com.moea.ExperimentStatus;
 import com.moea.dto.ExperimentDTO;
+import com.moea.dto.ExperimentRequestDTO;
 import com.moea.model.Algorithm;
 import com.moea.model.Experiment;
 import com.moea.model.ExperimentMetric;
@@ -32,6 +33,15 @@ public class ExperimentMapper {
                         .map(ExperimentMetric::getMetricName)
                         .toList()
                 )
+                .build();
+    }
+
+    public ExperimentDTO toDto(ExperimentRequestDTO experimentRequestDTO) {
+        return ExperimentDTO.builder()
+                .evaluations(experimentRequestDTO.getEvaluations())
+                .algorithms(experimentRequestDTO.getAlgorithms())
+                .problems(experimentRequestDTO.getProblems())
+                .metrics(experimentRequestDTO.getMetrics())
                 .build();
     }
 

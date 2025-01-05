@@ -2,6 +2,7 @@ package com.moea.controller;
 
 import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.ExperimentDTO;
+import com.moea.dto.ExperimentRequestDTO;
 import com.moea.dto.ExperimentResultDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.service.ExperimentService;
@@ -89,10 +90,11 @@ public class ExperimentController {
     }
 
     @PostMapping()
-    public List<Long> createExperiment(@RequestBody ExperimentDTO experimentDTO, @RequestParam(required = false) Integer invocations) {
+    public List<Long> createExperiment(@RequestBody ExperimentRequestDTO experimentRequestDTO, @RequestParam(required = false) Integer invocations) {
         try {
             List<Long> experimentIds = new ArrayList<>();
             UUID groupId = UUID.randomUUID();
+            ExperimentDTO experimentDTO = experimentMapper.toDto(experimentRequestDTO);
             experimentDTO.setGroupId(groupId);
             if (invocations == null) {
                 experimentIds.add(experimentService.createExperiment(experimentDTO));

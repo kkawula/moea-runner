@@ -24,7 +24,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -48,9 +50,9 @@ public class ExperimentService {
         this.experimentsResultsAggregator = experimentsResultsAggregator;
     }
 
-    public static Date convertStringToDate(String dateString) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return dateString == null ? null : dateFormat.parse(dateString);
+    public static LocalDateTime convertStringToDate(String dateString) {
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return dateString == null ? null : LocalDateTime.parse(dateString, dateFormat);
     }
 
     public Long createExperiment(ExperimentDTO experimentDTO) {

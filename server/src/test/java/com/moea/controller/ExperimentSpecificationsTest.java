@@ -15,8 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -104,13 +103,12 @@ public class ExperimentSpecificationsTest {
     @Test
     public void testWithinDateRangeSpecification_ValidDateRange_ExpectedResultArraySizeEquals3() {
         // GIVEN
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2025, Calendar.JANUARY, 1, 0, 30, 0);
-        Date fromDate = calendar.getTime();
-        calendar.set(2025, Calendar.JANUARY, 1, 4, 30, 0);
-        Date toDate = calendar.getTime();
+        LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 0, 30, 0);
+        LocalDateTime toDate = LocalDateTime.of(2025, 1, 1, 4, 30, 0);
+
         List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
         List<Experiment> dbExperiments = experimentRepository.findAll();
+
         for (int i = 0; i < experimentDTOList.size(); i++) {
             dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
             dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());

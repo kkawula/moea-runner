@@ -14,7 +14,7 @@ import jakarta.transaction.Transactional;
 import org.moeaframework.analysis.collector.Observation;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,7 +33,7 @@ public class ExperimentRunnerService {
     public Long saveNewRunningExperiment(ExperimentDTO experimentDTO) {
         Experiment experiment = experimentMapper.fromDTO(experimentDTO);
         experiment.setStatus(ExperimentStatus.RUNNING);
-        experiment.setStartDate(Calendar.getInstance().getTime());
+        experiment.setStartDate(LocalDateTime.now());
 
         Experiment result = experimentRepository.save(experiment);
         return result.getId();
@@ -43,7 +43,7 @@ public class ExperimentRunnerService {
     public void saveExperimentResults(Long experimentId, List<AlgorithmProblemResult> results) {
         Experiment experiment = experimentRepository.findById(experimentId).orElseThrow(ExperimentNotFoundException::new);
 
-        experiment.setEndDate(Calendar.getInstance().getTime());
+        experiment.setEndDate(LocalDateTime.now());
         experimentRepository.save(experiment);
 
         List<String> metricsToSave = experiment.getMetrics().stream()

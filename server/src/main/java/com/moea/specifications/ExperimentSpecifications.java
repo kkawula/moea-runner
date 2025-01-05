@@ -8,7 +8,7 @@ import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Component
 public class ExperimentSpecifications {
@@ -52,7 +52,7 @@ public class ExperimentSpecifications {
         };
     }
 
-    public Specification<Experiment> withinDateRange(Date fromDate, Date toDate) {
+    public Specification<Experiment> withinDateRange(LocalDateTime fromDate, LocalDateTime toDate) {
         return (root, query, criteriaBuilder) -> {
             if (fromDate == null || toDate == null) {
                 return null;

@@ -2,7 +2,7 @@ package com.moea.dto;
 
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,8 +17,8 @@ public class ExperimentDTO {
     private UUID groupId;
     private int evaluations;
     private String status;
-    private Date startDate;
-    private Date endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private List<String> algorithms;
     private List<String> problems;
     private List<String> metrics;

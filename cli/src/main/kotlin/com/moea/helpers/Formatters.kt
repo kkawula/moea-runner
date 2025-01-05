@@ -7,6 +7,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
+const val columnWidth: Int = 23;
+
 fun Experiment.prettyRepr(): String {
     return "Experiment $id\n" +
             "Evaluations: $evaluations\n" +
@@ -22,8 +24,8 @@ fun printFormattedResults(results: List<ExperimentResult>) {
     val metrics = results.map { it.metric }.distinct().sorted()
 
     val header = listOf("Problem", "Algorithm", "NFE") + metrics
-    println(header.joinToString(" ") { it.padEnd(23) })
-    println("-".repeat(header.size * 23))
+    println(header.joinToString(" ") { it.padEnd(columnWidth) })
+    println("-".repeat(header.size * columnWidth))
 
     for ((problemAlgorithm, entries) in groupedResults) {
         val (problem, algorithm) = problemAlgorithm
@@ -38,7 +40,7 @@ fun printFormattedResults(results: List<ExperimentResult>) {
             }
             row.addAll(metricResults)
 
-            println(row.joinToString(" ") { it.padEnd(23) })
+            println(row.joinToString(" ") { it.padEnd(columnWidth) })
         }
     }
 }
@@ -50,8 +52,8 @@ fun printFormattedAggregatedResults(results: List<AggregatedExperimentResult>) {
 
     val header =
         listOf("Problem", "Algorithm", "NFE") + metrics.flatMap { listOf("$it Mean", "$it Median", "$it StdDev") }
-    println(header.joinToString(" ") { it.padEnd(23) })
-    println("-".repeat(header.size * 23))
+    println(header.joinToString(" ") { it.padEnd(columnWidth) })
+    println("-".repeat(header.size * columnWidth))
 
     for ((problemAlgorithm, entries) in groupedResults) {
         val (problem, algorithm) = problemAlgorithm
@@ -70,7 +72,7 @@ fun printFormattedAggregatedResults(results: List<AggregatedExperimentResult>) {
             }
             row.addAll(metricResults)
 
-            println(row.joinToString(" ") { it.padEnd(23) })
+            println(row.joinToString(" ") { it.padEnd(columnWidth) })
         }
     }
 }

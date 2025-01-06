@@ -54,9 +54,13 @@ public class ExperimentController {
     }
 
     @GetMapping("/aggregated-results")
-    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(@RequestParam List<Long> experimentIds) {
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(
+            @RequestParam(required = false) List<Long> experimentIds,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate
+    ) {
         try {
-            return experimentService.getAggregatedExperimentResults(experimentIds);
+            return experimentService.getAggregatedExperimentResults(experimentIds, fromDate, toDate);
         } catch (ExperimentNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }

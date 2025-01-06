@@ -5,13 +5,25 @@ import com.moea.model.Experiment;
 import com.moea.model.Problem;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Path;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class ExperimentSpecifications {
+
+    public Specification<Experiment> withExperimentIds(List<Long> experimentsId) {
+        return (root, query, criteriaBuilder) -> {
+            if (experimentsId == null || experimentsId.isEmpty()) {
+                return null;
+            }
+            Path<Long> id = root.get("id");
+            return id.in(experimentsId);
+        };
+    }
 
     public Specification<Experiment> withAlgorithm(String algorithmName) {
         return (root, query, criteriaBuilder) -> {
@@ -54,10 +66,15 @@ public class ExperimentSpecifications {
 
     public Specification<Experiment> withinDateRange(LocalDateTime fromDate, LocalDateTime toDate) {
         return (root, query, criteriaBuilder) -> {
-            if (fromDate == null || toDate == null) {
+            if (fromDate == null & toDate == null) {
                 return null;
+            } else if (fromDate != null & toDate == null) {
+                return criteriaBuilder.greaterThanOrEqualTo(root.get("startDate"), fromDate);
+            } else if (fromDate != null) {
+                return criteriaBuilder.between(root.get("startDate"), fromDate, toDate);
+            } else {
+                return criteriaBuilder.lessThanOrEqualTo(root.get("endDate"), toDate);
             }
-            return criteriaBuilder.between(root.get("startDate"), fromDate, toDate);
         };
     }
 

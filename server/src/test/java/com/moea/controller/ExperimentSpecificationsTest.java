@@ -7,11 +7,13 @@ import com.moea.repository.ExperimentRepository;
 import com.moea.service.ExperimentService;
 import com.moea.specifications.ExperimentSpecifications;
 import jakarta.transaction.Transactional;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ExperimentSpecificationsTest {
     @Autowired
     private ExperimentRepository experimentRepository;
@@ -141,4 +144,98 @@ public class ExperimentSpecificationsTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)));
     }
+
+    @Test
+    public void testSpecificationFromGivenDateToTheRest_ValidFromDate_ExpectedResultArraySizeEquals3() {
+        // GIVEN
+        LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 3, 30, 0);
+
+        List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
+        List<Experiment> dbExperiments = experimentRepository.findAll();
+
+        for (int i = 0; i < experimentDTOList.size(); i++) {
+            dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
+            dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
+        }
+
+        Specification<Experiment> spec = Specification.where(
+                experimentSpecifications.withinDateRange(fromDate, null));
+
+        // WHEN
+        List<Experiment> result = experimentRepository.findAll(spec);
+
+        // THEN
+        assertEquals(3, result.size());
+    }
+
+    @Test
+    public void testSpecificationFromGivenDateToTheRestMvc_ValidFromDate_ExpectedResultArraySizeEquals3() throws Exception {
+        // GIVEN
+        List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
+        List<Experiment> dbExperiments = experimentRepository.findAll();
+        for (int i = 0; i < experimentDTOList.size(); i++) {
+            dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
+            dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
+        }
+
+        // THEN
+        mockMvc.perform(get("/experiments")
+                        .param("fromDate", "2025-01-01 03:30:00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)));
+    }
+
+    @Test
+    public void testSpecificationToGivenDateToTheBeginning_ValidToDate_ExpectedResultArraySizeEquals4() {
+        // GIVEN
+        LocalDateTime toDate = LocalDateTime.of(2025, 1, 2, 2, 0, 0);
+
+        List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
+        List<Experiment> dbExperiments = experimentRepository.findAll();
+
+        for (int i = 0; i < experimentDTOList.size(); i++) {
+            dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
+            dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
+        }
+
+        Specification<Experiment> spec = Specification.where(
+                experimentSpecifications.withinDateRange(null, toDate));
+
+        // WHEN
+        List<Experiment> result = experimentRepository.findAll(spec);
+
+        // THEN
+        assertEquals(4, result.size());
+    }
+
+    @Test
+    public void testSpecificationToGivenDateToTheBeginningMvc_ValidToDate_ExpectedResultArraySizeEquals4() throws Exception {
+        // GIVEN
+        List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
+        List<Experiment> dbExperiments = experimentRepository.findAll();
+        for (int i = 0; i < experimentDTOList.size(); i++) {
+            dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
+            dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
+        }
+
+        // THEN
+        mockMvc.perform(get("/experiments")
+                        .param("toDate", "2025-01-02 02:00:00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(4)));
+    }
+
+    @Test
+    public void testWithExperimentIdsSpecification_ListOfExperimentIds_ExpectedResultArraySizeEquals3() {
+        List<Long> ids = Lists.newArrayList(3L, 4L, 5L);
+
+        Specification<Experiment> spec = Specification.where(experimentSpecifications.withExperimentIds(ids));
+
+        // WHEN
+        List<Experiment> result = experimentRepository.findAll(spec);
+
+        // THEN
+        assertEquals(3, result.size());
+    }
+
 }

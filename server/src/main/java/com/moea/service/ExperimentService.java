@@ -23,8 +23,6 @@ import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -134,12 +132,10 @@ public class ExperimentService {
         return experimentResultsRepository.findByExperimentId(id);
     }
 
-    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds) {
-        List<Experiment> experiments = experimentRepository.findAllById(experimentIds);
-
-        if (experiments.size() != experimentIds.size()) {
-            throw new ExperimentNotFoundException();
-        }
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds, String fromDate, String toDate) {
+        Specification<Experiment> spec = Specification.where(experimentSpecifications.withExperimentIds(experimentIds))
+                .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
+        List<Experiment> experiments = experimentRepository.findAll(spec);
 
         Map<Long, List<ExperimentResult>> experimentsResults = new HashMap<>();
 

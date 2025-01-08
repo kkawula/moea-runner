@@ -1,6 +1,7 @@
 package com.moea.controller;
 
 import com.moea.ExperimentStatus;
+import com.moea.TestConst;
 import com.moea.dto.*;
 import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.Experiment;
@@ -67,30 +68,7 @@ public class ExperimentControllerTest {
     @Test
     public void testCreateExperiment_SampleOfExperimentDTODataAndRequestBody_ExpectedStatusOk() throws Exception {
         //given
-        ExperimentDTO experimentDTO = ExperimentDTO.builder()
-                .evaluations(10)
-                .algorithms(List.of("NSGAII", "GDE3"))
-                .problems(List.of("UF1", "DTLZ2_2"))
-                .metrics(List.of("Hypervolume", "Spacing"))
-                .build();
-
-        String requestBody = """
-                {
-                  "evaluations": 10,
-                  "algorithms": [
-                    "NSGAII",
-                    "GDE3"
-                  ],
-                  "problems": [
-                    "UF1",
-                    "DTLZ2_2"
-                  ],
-                  "metrics": [
-                    "Hypervolume",
-                    "Spacing"
-                  ]
-                }
-                """;
+        ExperimentDTO experimentDTO = TestConst.getPostExperimentRequestExperimentdto();
 
         //when
         when(experimentService.createExperiment(any(ExperimentDTO.class))).thenReturn(1L);
@@ -99,7 +77,7 @@ public class ExperimentControllerTest {
         //then
         mockMvc.perform(post("/experiments")
                         .contentType("application/json")
-                        .content(requestBody))
+                        .content(TestConst.getPostExperimentRequestBody()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("[1]"));
     }
@@ -169,7 +147,7 @@ public class ExperimentControllerTest {
                 .build();
 
         //when
-        when(experimentService.getAggregatedExperimentResults(List.of(1L, 2L)))
+        when(experimentService.getAggregatedExperimentResults(List.of(1L, 2L), null, null))
                 .thenReturn(List.of(aggregatedResult));
 
         //then
@@ -188,7 +166,7 @@ public class ExperimentControllerTest {
     @Test
     public void testGetAggregatedExperimentResults_InvalidExperimentIds_ExpectedNotFoundStatus() throws Exception {
         //when
-        when(experimentService.getAggregatedExperimentResults(List.of(1L, 2L)))
+        when(experimentService.getAggregatedExperimentResults(List.of(1L, 2L), null, null))
                 .thenThrow(new ExperimentNotFoundException());
 
         //then
@@ -200,21 +178,7 @@ public class ExperimentControllerTest {
     @Test
     public void testCreateExperiment_WithInvocations_ExpectedMultipleExperimentIds() throws Exception {
         //given
-        ExperimentDTO experimentDTO = ExperimentDTO.builder()
-                .evaluations(10)
-                .algorithms(List.of("NSGAII", "GDE3"))
-                .problems(List.of("UF1", "DTLZ2_2"))
-                .metrics(List.of("Hypervolume", "Spacing"))
-                .build();
-
-        String requestBody = """
-                {
-                  "evaluations": 10,
-                  "algorithms": ["NSGAII", "GDE3"],
-                  "problems": ["UF1", "DTLZ2_2"],
-                  "metrics": ["Hypervolume", "Spacing"]
-                }
-                """;
+        ExperimentDTO experimentDTO = TestConst.getPostExperimentRequestExperimentdto();
 
         //when
         when(experimentService.createExperiment(any(ExperimentDTO.class))).thenReturn(1L, 2L, 3L, 4L);
@@ -224,7 +188,7 @@ public class ExperimentControllerTest {
         mockMvc.perform(post("/experiments")
                         .param("invocations", "4")
                         .contentType("application/json")
-                        .content(requestBody))
+                        .content(TestConst.getPostExperimentRequestBody()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("[1,2,3,4]"));
     }

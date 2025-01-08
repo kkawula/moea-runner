@@ -1,11 +1,9 @@
 package com.moea.util;
 
 import com.moea.ExperimentStatus;
+import com.moea.TestConst;
 import com.moea.dto.ExperimentDTO;
-import com.moea.model.Algorithm;
 import com.moea.model.Experiment;
-import com.moea.model.ExperimentMetric;
-import com.moea.model.Problem;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -20,23 +18,7 @@ class ExperimentMapperTest {
     @Test
     void testToDTO_SampleODExperimentData_ExpectedCorrectDataInDTO() {
         // Given
-        Experiment experiment = Experiment.builder()
-                .id(1L)
-                .evaluations(100)
-                .status(ExperimentStatus.RUNNING)
-                .algorithms(List.of(
-                        Algorithm.builder().algorithmName("NSGAII").build(),
-                        Algorithm.builder().algorithmName("GDE3").build()
-                ))
-                .problems(List.of(
-                        Problem.builder().problemName("UF1").build(),
-                        Problem.builder().problemName("DTLZ2_2").build()
-                ))
-                .metrics(List.of(
-                        ExperimentMetric.builder().metricName("Hypervolume").build(),
-                        ExperimentMetric.builder().metricName("Spacing").build()
-                ))
-                .build();
+        Experiment experiment = TestConst.getPostExperimentRequestExperiment();
 
         // When
         ExperimentDTO experimentDTO = experimentMapper.toDTO(experiment);
@@ -46,22 +28,16 @@ class ExperimentMapperTest {
         assertEquals(1L, experimentDTO.getId());
         assertEquals(100, experimentDTO.getEvaluations());
         assertEquals("RUNNING", experimentDTO.getStatus());
-        assertEquals(List.of("NSGAII", "GDE3"), experimentDTO.getAlgorithms());
-        assertEquals(List.of("UF1", "DTLZ2_2"), experimentDTO.getProblems());
-        assertEquals(List.of("Hypervolume", "Spacing"), experimentDTO.getMetrics());
+        assertEquals(TestConst.getAlgorithms().subList(0,2), experimentDTO.getAlgorithms());
+        assertEquals(List.of(TestConst.getProblems().getFirst(), TestConst.getProblems().get(4)), experimentDTO.getProblems());
+        assertEquals(TestConst.getMetrics().subList(1,3), experimentDTO.getMetrics());
     }
 
     @Test
     void testFromDTO_SampleOfExperimentDTOData_ExpectedCorrectDataInMappedEntity() {
         // Given
-        ExperimentDTO experimentDTO = ExperimentDTO.builder()
-                .id(1L)
-                .evaluations(100)
-                .status("RUNNING")
-                .algorithms(List.of("NSGAII", "GDE3"))
-                .problems(List.of("UF1", "DTLZ2_2"))
-                .metrics(List.of("Hypervolume", "Spacing"))
-                .build();
+        ExperimentDTO experimentDTO = TestConst.getPostExperimentRequestExperimentdto();
+        System.out.println(experimentDTO);
 
         // When
         Experiment experiment = experimentMapper.fromDTO(experimentDTO);
@@ -69,30 +45,25 @@ class ExperimentMapperTest {
         // Then
         assertNotNull(experiment);
         assertEquals(1L, experiment.getId());
-        assertEquals(100, experiment.getEvaluations());
+        assertEquals(10, experiment.getEvaluations());
         assertEquals(ExperimentStatus.RUNNING, experiment.getStatus());
         assertEquals(2, experiment.getAlgorithms().size());
-        assertEquals("NSGAII", experiment.getAlgorithms().get(0).getAlgorithmName());
-        assertEquals("GDE3", experiment.getAlgorithms().get(1).getAlgorithmName());
+        assertEquals(TestConst.getAlgorithms().getFirst(), experiment.getAlgorithms().get(0).getAlgorithmName());
+        assertEquals(TestConst.getAlgorithms().get(1), experiment.getAlgorithms().get(1).getAlgorithmName());
         assertEquals(2, experiment.getProblems().size());
-        assertEquals("UF1", experiment.getProblems().get(0).getProblemName());
-        assertEquals("DTLZ2_2", experiment.getProblems().get(1).getProblemName());
+        assertEquals(TestConst.getProblems().getFirst(), experiment.getProblems().get(0).getProblemName());
+        assertEquals(TestConst.getProblems().get(4), experiment.getProblems().get(1).getProblemName());
         assertEquals(2, experiment.getMetrics().size());
-        assertEquals("Hypervolume", experiment.getMetrics().get(0).getMetricName());
-        assertEquals("Spacing", experiment.getMetrics().get(1).getMetricName());
+        assertEquals(TestConst.getMetrics().get(1), experiment.getMetrics().get(0).getMetricName());
+        assertEquals(TestConst.getMetrics().get(2), experiment.getMetrics().get(1).getMetricName());
     }
 
     @Test
     void testFromDTO_SampleDataOFExperimentDTOWithNullStatus_ExpectedHandleNullStatus() {
         // Given
-        ExperimentDTO experimentDTO = ExperimentDTO.builder()
-                .id(1L)
-                .evaluations(100)
-                .status(null)
-                .algorithms(List.of("NSGAII"))
-                .problems(List.of("UF1"))
-                .metrics(List.of("Hypervolume"))
-                .build();
+        ExperimentDTO experimentDTO = TestConst.getPostExperimentRequestExperimentdto();
+        String currentStatus = experimentDTO.getStatus();
+        experimentDTO.setStatus(null);
 
         // When
         Experiment experiment = experimentMapper.fromDTO(experimentDTO);
@@ -100,5 +71,6 @@ class ExperimentMapperTest {
         // Then
         assertNotNull(experiment);
         assertEquals(ExperimentStatus.NEW, experiment.getStatus());
+        experimentDTO.setStatus(currentStatus);
     }
 }

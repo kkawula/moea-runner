@@ -179,7 +179,14 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
     private val commonArgs by requireObject<CommonArgs>()
 
     private val experimentIds by argument("experiment-ids", help = "Space-separated list of experiment ids").int()
-        .multiple(required = true)
+        .multiple()
+    private val fromDate by option(
+        "--from-date",
+        help = "Filter from date (\"yyyy-MM-dd HH:mm:ss\")"
+    ).convert { convertDate(it) }
+    private val toDate by option("--to-date", help = "Filter to date (\"yyyy-MM-dd HH:mm:ss\")").convert {
+        convertDate(it)
+    }
 
 
     override fun run(): Unit = runBlocking {
@@ -187,7 +194,7 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
 
         try {
             val result = sendRequest(apiClient) { client ->
-                client.getAggregatedExperimentsResults(experimentIds)
+                client.getAggregatedExperimentsResults(experimentIds, fromDate, toDate)
             }
             result.onSuccess { results ->
                 printFormattedAggregatedResults(results)

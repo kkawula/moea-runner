@@ -52,6 +52,6 @@ class ApiClient(baseUrl: String = BASE_URL) {
 
     suspend fun repeatExperiment(id: Int, invocations: Int?) = apiService.repeatExperiment(id, invocations)
     suspend fun getUniqueExperiments() = apiService.getUniqueExperiments()
-    suspend fun getAggregatedExperimentsResults(experimentIds: List<Int>) =
-        apiService.getAggregatedExperimentsResults(experimentIds)
+    suspend fun getAggregatedExperimentsResults(experimentIds: List<Int>?, fromDate: String?, toDate: String?) =
+        apiService.getAggregatedExperimentsResults(experimentIds, fromDate, toDate)
 }

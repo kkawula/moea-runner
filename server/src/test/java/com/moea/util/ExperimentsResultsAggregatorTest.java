@@ -2,7 +2,8 @@ package com.moea.util;
 
 import com.moea.TestConst;
 import com.moea.dto.AggregatedExperimentResultDTO;
-import com.moea.model.*;
+import com.moea.model.Experiment;
+import com.moea.model.ExperimentResult;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

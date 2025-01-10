@@ -53,17 +53,147 @@ public class TestConst {
     private static final Algorithm ALGORITHM_NSGAII = Algorithm.builder().algorithmName(ALGORITHMS.getFirst()).build();
     private static final Algorithm ALGORITHM_GDE3 = Algorithm.builder().algorithmName(ALGORITHMS.get(1)).build();
     private static final ExperimentMetric METRIC_HYPERVOLUME = ExperimentMetric.builder().metricName(METRICS.get(1)).build();
+    private static final Experiment EXPERIMENT1 = Experiment.builder()
+            .id(1L)
+            .evaluations(200)
+            .problems(List.of(PROBLEM_DTLZ2_2))
+            .algorithms(List.of(ALGORITHM_NSGAII, ALGORITHM_GDE3))
+            .metrics(List.of(METRIC_HYPERVOLUME))
+            .build();
+    private static final Experiment EXPERIMENT3 = Experiment.builder()
+            .id(3L)
+            .evaluations(300)
+            .problems(List.of(PROBLEM_DTLZ2_2))
+            .algorithms(List.of(ALGORITHM_NSGAII))
+            .metrics(List.of(METRIC_HYPERVOLUME))
+            .build();
+    private static final ExperimentResult RESULT1_1 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(100)
+            .result(100.0)
+            .build();
+    private static final ExperimentResult RESULT1_2 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_GDE3.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(100)
+            .result(200.0)
+            .build();
+    private static final ExperimentResult RESULT1_3 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(200)
+            .result(300.0)
+            .build();
+    private static final ExperimentResult RESULT1_4 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_GDE3.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(200)
+            .result(400.0)
+            .build();
+    private static final ExperimentResult RESULT2_1 = ExperimentResult.builder()
+            .problem(PROBLEM_UF1.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(100)
+            .result(100.0)
+            .build();
+    private static final ExperimentResult RESULT2_3 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(100)
+            .result(200.0)
+            .build();
+    private static final ExperimentResult RESULT2_5 = ExperimentResult.builder()
+            .problem(PROBLEM_UF1.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(200)
+            .result(100.0)
+            .build();
+    private static final ExperimentResult RESULT2_7 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(200)
+            .result(200.0)
+            .build();
+    private static final ExperimentResult RESULT3_1 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(100)
+            .result(900.0)
+            .build();
+    private static final ExperimentResult RESULT3_2 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(200)
+            .result(500.0)
+            .build();
+    private static final ExperimentResult RESULT3_3 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_HYPERVOLUME.getMetricName())
+            .iteration(300)
+            .result(400.0)
+            .build();
     private static final ExperimentMetric METRIC_SPACING = ExperimentMetric.builder().metricName(METRICS.get(2)).build();
-
+    private static final Experiment EXPERIMENT2 = Experiment.builder()
+            .id(2L)
+            .evaluations(200)
+            .problems(List.of(PROBLEM_UF1, PROBLEM_DTLZ2_2))
+            .algorithms(List.of(ALGORITHM_NSGAII))
+            .metrics(List.of(METRIC_HYPERVOLUME, METRIC_SPACING))
+            .build();
+    private static final List<Experiment> AGGREGATED_EXPERIMENTS = List.of(EXPERIMENT1, EXPERIMENT2, EXPERIMENT3);
+    private static final ExperimentResult RESULT2_2 = ExperimentResult.builder()
+            .problem(PROBLEM_UF1.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_SPACING.getMetricName())
+            .iteration(100)
+            .result(300.0)
+            .build();
+    private static final ExperimentResult RESULT2_4 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_SPACING.getMetricName())
+            .iteration(100)
+            .result(150.0)
+            .build();
+    private static final ExperimentResult RESULT2_6 = ExperimentResult.builder()
+            .problem(PROBLEM_UF1.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_SPACING.getMetricName())
+            .iteration(200)
+            .result(300.0)
+            .build();
+    private static final ExperimentResult RESULT2_8 = ExperimentResult.builder()
+            .problem(PROBLEM_DTLZ2_2.getProblemName())
+            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
+            .metric(METRIC_SPACING.getMetricName())
+            .iteration(200)
+            .result(150.0)
+            .build();
+    private static final Map<Long, List<ExperimentResult>> EXPERIMENT_RESULTS = Map.of(
+            1L, List.of(RESULT1_1, RESULT1_2, RESULT1_3, RESULT1_4),
+            2L, List.of(RESULT2_1, RESULT2_2, RESULT2_3, RESULT2_4, RESULT2_5, RESULT2_6, RESULT2_7, RESULT2_8),
+            3L, List.of(RESULT3_1, RESULT3_2, RESULT3_3)
+    );
     private static final ExperimentDTO POST_EXPERIMENT_REQUEST_EXPERIMENTDTO = ExperimentDTO.builder()
             .id(1L)
             .evaluations(10)
             .status("RUNNING")
-            .algorithms(ALGORITHMS.subList(0,2))
+            .algorithms(ALGORITHMS.subList(0, 2))
             .problems(List.of(PROBLEMS.getFirst(), PROBLEMS.get(4)))
-            .metrics(METRICS.subList(1,3))
+            .metrics(METRICS.subList(1, 3))
             .build();
-
     private static final Experiment POST_EXPERIMENT_REQUEST_EXPERIMENT = Experiment.builder()
             .id(1L)
             .evaluations(100)
@@ -81,7 +211,6 @@ public class TestConst {
                     ExperimentMetric.builder().metricName(METRICS.get(2)).build()
             ))
             .build();
-
     private static final List<ExperimentDTO> EXPERIMENTS = List.of(
             ExperimentDTO.builder()
                     .evaluations(100)
@@ -125,158 +254,6 @@ public class TestConst {
                     .build()
     );
 
-    private static final Experiment EXPERIMENT1 = Experiment.builder()
-            .id(1L)
-            .evaluations(200)
-            .problems(List.of(PROBLEM_DTLZ2_2))
-            .algorithms(List.of(ALGORITHM_NSGAII, ALGORITHM_GDE3))
-            .metrics(List.of(METRIC_HYPERVOLUME))
-            .build();
-
-    private static final Experiment EXPERIMENT2 = Experiment.builder()
-            .id(2L)
-            .evaluations(200)
-            .problems(List.of(PROBLEM_UF1, PROBLEM_DTLZ2_2))
-            .algorithms(List.of(ALGORITHM_NSGAII))
-            .metrics(List.of(METRIC_HYPERVOLUME, METRIC_SPACING))
-            .build();
-
-    private static final Experiment EXPERIMENT3 = Experiment.builder()
-            .id(3L)
-            .evaluations(300)
-            .problems(List.of(PROBLEM_DTLZ2_2))
-            .algorithms(List.of(ALGORITHM_NSGAII))
-            .metrics(List.of(METRIC_HYPERVOLUME))
-            .build();
-
-    private static final ExperimentResult RESULT1_1 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(100)
-            .result(100.0)
-            .build();
-
-    private static final ExperimentResult RESULT1_2 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_GDE3.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(100)
-            .result(200.0)
-            .build();
-
-    private static final ExperimentResult RESULT1_3 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(200)
-            .result(300.0)
-            .build();
-
-    private static final ExperimentResult RESULT1_4 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_GDE3.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(200)
-            .result(400.0)
-            .build();
-
-    private static final ExperimentResult RESULT2_1 = ExperimentResult.builder()
-            .problem(PROBLEM_UF1.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(100)
-            .result(100.0)
-            .build();
-
-    private static final ExperimentResult RESULT2_2 = ExperimentResult.builder()
-            .problem(PROBLEM_UF1.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_SPACING.getMetricName())
-            .iteration(100)
-            .result(300.0)
-            .build();
-
-    private static final ExperimentResult RESULT2_3 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(100)
-            .result(200.0)
-            .build();
-
-    private static final ExperimentResult RESULT2_4 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_SPACING.getMetricName())
-            .iteration(100)
-            .result(150.0)
-            .build();
-
-    private static final ExperimentResult RESULT2_5 = ExperimentResult.builder()
-            .problem(PROBLEM_UF1.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(200)
-            .result(100.0)
-            .build();
-
-    private static final ExperimentResult RESULT2_6 = ExperimentResult.builder()
-            .problem(PROBLEM_UF1.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_SPACING.getMetricName())
-            .iteration(200)
-            .result(300.0)
-            .build();
-
-    private static final ExperimentResult RESULT2_7 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(200)
-            .result(200.0)
-            .build();
-
-    private static final ExperimentResult RESULT2_8 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_SPACING.getMetricName())
-            .iteration(200)
-            .result(150.0)
-            .build();
-
-    private static final ExperimentResult RESULT3_1 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(100)
-            .result(900.0)
-            .build();
-
-    private static final ExperimentResult RESULT3_2 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(200)
-            .result(500.0)
-            .build();
-
-    private static final ExperimentResult RESULT3_3 = ExperimentResult.builder()
-            .problem(PROBLEM_DTLZ2_2.getProblemName())
-            .algorithm(ALGORITHM_NSGAII.getAlgorithmName())
-            .metric(METRIC_HYPERVOLUME.getMetricName())
-            .iteration(300)
-            .result(400.0)
-            .build();
-
-    private static final Map<Long, List<ExperimentResult>> EXPERIMENT_RESULTS = Map.of(
-            1L, List.of(RESULT1_1, RESULT1_2, RESULT1_3 ,RESULT1_4),
-            2L, List.of(RESULT2_1, RESULT2_2, RESULT2_3, RESULT2_4, RESULT2_5, RESULT2_6, RESULT2_7, RESULT2_8),
-            3L, List.of(RESULT3_1 ,RESULT3_2, RESULT3_3)
-    );
-
-    private static final List<Experiment> AGGREGATED_EXPERIMENTS = List.of(EXPERIMENT1, EXPERIMENT2, EXPERIMENT3);
-
     public static Map<Long, List<ExperimentResult>> getExperimentResults() {
         return EXPERIMENT_RESULTS;
     }
@@ -310,7 +287,7 @@ public class TestConst {
     }
 
     public static Experiment getPostExperimentRequestExperiment() {
-        return  POST_EXPERIMENT_REQUEST_EXPERIMENT;
+        return POST_EXPERIMENT_REQUEST_EXPERIMENT;
     }
 
     public static Problem getProblemUf1() {

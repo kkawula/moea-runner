@@ -1,6 +1,7 @@
 package com.moea.service;
 
 import com.moea.ExperimentStatus;
+import com.moea.conversations.CSVUtil;
 import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.AlgorithmProblemResult;
 import com.moea.dto.ExperimentDTO;
@@ -17,18 +18,30 @@ import com.moea.util.ExperimentValidator;
 import com.moea.util.ExperimentsResultsAggregator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.jfree.chart.JFreeChart;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
+import org.moeaframework.analysis.plot.Plot;
 import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.moea.util.ChartComposer.saveCombinedChartAsPNG;
 
 
 @Service
@@ -135,7 +148,7 @@ public class ExperimentService {
         return experimentResultsRepository.findByExperimentId(id);
     }
 
-    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds, String fromDate, String toDate) {
+    private List<AggregatedExperimentResultDTO> getAggregatedExperiments(List<Long> experimentIds, String fromDate, String toDate) {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withExperimentIds(experimentIds))
                 .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
         List<Experiment> experiments = experimentRepository.findAll(spec);
@@ -148,6 +161,105 @@ public class ExperimentService {
         }
 
         return experimentsResultsAggregator.combineResults(experiments, experimentsResults);
+    }
+
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds, String fromDate, String toDate) {
+        return getAggregatedExperiments(experimentIds, fromDate, toDate);
+    }
+
+    public String getAggregatedExperimentResultsCSV(List<Long> experimentIds, String fromDate, String toDate) {
+        List<AggregatedExperimentResultDTO> aggregatedExperiments = getAggregatedExperiments(experimentIds, fromDate, toDate);
+
+        return CSVUtil.toCsv(aggregatedExperiments);
+    }
+
+    public ResponseEntity<byte[]> getAggregatedExperimentResultsPlot(List<Long> experimentIds, String fromDate, String toDate) {
+        List<AggregatedExperimentResultDTO> aggregatedExperiments = getAggregatedExperiments(experimentIds, fromDate, toDate);
+
+        List<String> problems = aggregatedExperiments.stream()
+                .map(AggregatedExperimentResultDTO::getProblem)
+                .distinct()
+                .toList();
+
+        if (problems.isEmpty()) {
+            throw new IllegalStateException("No problems found in aggregated experiments.");
+        }
+        List<JFreeChart> charts = new ArrayList<>();
+
+        for (String problem : problems) {
+
+
+            List<AggregatedExperimentResultDTO> filteredExperiments = aggregatedExperiments.stream()
+                    .filter(res -> res.getProblem().equals(problem))
+                    .toList();
+
+            List<String> metrics = filteredExperiments.stream()
+                    .map(AggregatedExperimentResultDTO::getMetric)
+                    .distinct()
+                    .toList();
+
+
+            for (String metric : metrics) {
+                List<AggregatedExperimentResultDTO> filteredByMetric = filteredExperiments.stream()
+                        .filter(res -> res.getMetric().equals(metric))
+                        .toList();
+
+                Map<String, List<AggregatedExperimentResultDTO>> resultsByAlgorithm = filteredByMetric.stream()
+                        .collect(Collectors.groupingBy(AggregatedExperimentResultDTO::getAlgorithm));
+
+                Map<String, double[]> xSeries = new HashMap<>();
+                Map<String, double[]> ySeries = new HashMap<>();
+                for (Map.Entry<String, List<AggregatedExperimentResultDTO>> entry : resultsByAlgorithm.entrySet()) {
+                    String algorithm = entry.getKey();
+                    List<AggregatedExperimentResultDTO> data = entry.getValue();
+
+                    data.sort(Comparator.comparingInt(AggregatedExperimentResultDTO::getIteration));
+
+                    double[] x = data.stream()
+                            .mapToDouble(AggregatedExperimentResultDTO::getIteration)
+                            .toArray();
+
+                    double[] y = data.stream()
+                            .mapToDouble(res -> res.getResult().getMean())
+                            .toArray();
+
+                    xSeries.put(algorithm, x);
+                    ySeries.put(algorithm, y);
+                }
+
+                Plot plot = new Plot();
+
+                int index = 0;
+                Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA};
+                for (String algorithm : xSeries.keySet()) {
+                    double[] x = xSeries.get(algorithm);
+                    double[] y = ySeries.get(algorithm);
+
+                    plot.line(algorithm, x, y)
+                            .withPaint(colors[index % colors.length]); // różne kolory dla serii
+                    index++;
+                }
+                plot.setXLabel("Iterations")
+                        .setYLabel("Mean Value")
+                        .setTitle("Problem: " + problem + " - Metric: " + metric);
+
+                charts.addLast(plot.getChart());
+
+            }
+        }
+        BufferedImage image = saveCombinedChartAsPNG(charts);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(image, "png", bos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        byte[] imageBytes = bos.toByteArray();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
     }
 
     public ExperimentStatus getExperimentStatus(Long id) {

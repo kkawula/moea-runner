@@ -1,6 +1,5 @@
 package com.moea.controller;
 
-import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.ExperimentDTO;
 import com.moea.dto.ExperimentRequestDTO;
 import com.moea.dto.ExperimentResultDTO;
@@ -51,19 +50,6 @@ public class ExperimentController {
         return experimentService.getUniqueExperiments().stream()
                 .map(experimentMapper::toDTO)
                 .toList();
-    }
-
-    @GetMapping("/aggregated-results")
-    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(
-            @RequestParam(required = false) List<Long> experimentIds,
-            @RequestParam(required = false) String fromDate,
-            @RequestParam(required = false) String toDate
-    ) {
-        try {
-            return experimentService.getAggregatedExperimentResults(experimentIds, fromDate, toDate);
-        } catch (ExperimentNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
     }
 
     @GetMapping("/{id}/results")

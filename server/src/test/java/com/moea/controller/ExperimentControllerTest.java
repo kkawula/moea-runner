@@ -38,11 +38,13 @@ public class ExperimentControllerTest {
     ExperimentMapper experimentMapper;
     @InjectMocks
     ExperimentController controllerUnderTest;
+    @InjectMocks
+    AggregatedResultsController aggregatedResultsController;
     private MockMvc mockMvc;
 
     @BeforeEach
     public void setup() {
-        this.mockMvc = MockMvcBuilders.standaloneSetup(controllerUnderTest).build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(controllerUnderTest, aggregatedResultsController).build();
     }
 
     @Test

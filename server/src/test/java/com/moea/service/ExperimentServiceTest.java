@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,7 +61,7 @@ public class ExperimentServiceTest {
     private ExperimentService experimentService;
 
     @Test
-    void testGetExperiments_SampleOfExperimentsData_ExpectedCorrectResultBody() throws ParseException {
+    void testGetExperiments_SampleOfExperimentsData_ExpectedCorrectResultBody() {
         // Given
         Experiment experiment1 = Experiment.builder().id(1L).evaluations(100).status(ExperimentStatus.RUNNING).build();
         Experiment experiment2 = Experiment.builder().id(2L).evaluations(200).status(ExperimentStatus.FINISHED).build();

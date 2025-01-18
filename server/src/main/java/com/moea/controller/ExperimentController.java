@@ -138,4 +138,14 @@ public class ExperimentController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteExperiment(@PathVariable Long id) {
+        experimentService.deleteExperiment(id);
+    }
+
+    @DeleteMapping("/group/{groupName}")
+    public void deleteExperimentsByGroupName(@PathVariable String groupName) {
+        experimentService.deleteExperimentsByGroupName(groupName);
+    }
 }

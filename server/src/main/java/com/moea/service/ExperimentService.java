@@ -16,6 +16,7 @@ import com.moea.util.ExperimentMapper;
 import com.moea.util.ExperimentValidator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import jakarta.transaction.Transactional;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
 import org.moeaframework.core.spi.ProviderNotFoundException;
@@ -64,6 +65,7 @@ public class ExperimentService {
                 .observeOn(Schedulers.io())
                 .doOnComplete(() -> experimentRunnerService.saveExperimentResults(newExperimentID, results))
                 .doOnError(e -> updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
+                .onErrorComplete()
                 .subscribe();
 
         return newExperimentID;
@@ -172,5 +174,14 @@ public class ExperimentService {
         });
 
         return experiments;
+    }
+
+    public void deleteExperiment(Long id) {
+        experimentRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteExperimentsByGroupName(String groupName) {
+        experimentRepository.deleteByGroupName(groupName);
     }
 }

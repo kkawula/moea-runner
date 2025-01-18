@@ -14,21 +14,19 @@ import com.moea.repository.ExperimentResultsRepository;
 import com.moea.specifications.ExperimentSpecifications;
 import com.moea.util.ExperimentMapper;
 import com.moea.util.ExperimentValidator;
-import com.moea.util.ExperimentsResultsAggregator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
 import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @Service
@@ -39,16 +37,16 @@ public class ExperimentService {
     private final ExperimentValidator experimentValidator;
     private final ExperimentMapper experimentMapper;
     private final ExperimentSpecifications experimentSpecifications;
-    private final ExperimentsResultsAggregator experimentsResultsAggregator;
+    private final AggregatedExperimentResultsProcessor aggregatedExperimentResultsProcessor;
 
-    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications, ExperimentsResultsAggregator experimentsResultsAggregator) {
+    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications, AggregatedExperimentResultsProcessor aggregatedExperimentResultsProcessor) {
         this.experimentRepository = experimentRepository;
         this.experimentResultsRepository = experimentResultsRepository;
         this.experimentRunnerService = experimentRunnerService;
         this.experimentValidator = experimentValidator;
         this.experimentMapper = experimentMapper;
         this.experimentSpecifications = experimentSpecifications;
-        this.experimentsResultsAggregator = experimentsResultsAggregator;
+        this.aggregatedExperimentResultsProcessor = aggregatedExperimentResultsProcessor;
     }
 
     public static LocalDateTime convertStringToDate(String dateString) {
@@ -136,18 +134,15 @@ public class ExperimentService {
     }
 
     public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds, String fromDate, String toDate) {
-        Specification<Experiment> spec = Specification.where(experimentSpecifications.withExperimentIds(experimentIds))
-                .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
-        List<Experiment> experiments = experimentRepository.findAll(spec);
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(experimentIds, fromDate, toDate);
+    }
 
-        Map<Long, List<ExperimentResult>> experimentsResults = new HashMap<>();
+    public String getAggregatedExperimentResultsCSV(List<Long> experimentIds, String fromDate, String toDate) {
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsCSV(experimentIds, fromDate, toDate);
+    }
 
-        for (Experiment experiment : experiments) {
-            List<ExperimentResult> experimentResults = experimentResultsRepository.findByExperimentId(experiment.getId());
-            experimentsResults.put(experiment.getId(), experimentResults);
-        }
-
-        return experimentsResultsAggregator.combineResults(experiments, experimentsResults);
+    public ResponseEntity<byte[]> getAggregatedExperimentResultsPlot(List<Long> experimentIds, String fromDate, String toDate) {
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsPlot(experimentIds, fromDate, toDate);
     }
 
     public ExperimentStatus getExperimentStatus(Long id) {

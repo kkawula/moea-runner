@@ -7,6 +7,7 @@ import com.moea.helpers.ExperimentFilter
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 
 
@@ -20,6 +21,7 @@ class ApiClient(baseUrl: String = BASE_URL) {
     private val retrofit = Retrofit.Builder()
         .baseUrl(baseUrl)
         .client(okHttpClient)
+        .addConverterFactory(ScalarsConverterFactory.create())
         .addConverterFactory(
             GsonConverterFactory.create(
                 GsonBuilder()
@@ -54,4 +56,9 @@ class ApiClient(baseUrl: String = BASE_URL) {
     suspend fun getUniqueExperiments() = apiService.getUniqueExperiments()
     suspend fun getAggregatedExperimentsResults(experimentIds: List<Int>?, fromDate: String?, toDate: String?) =
         apiService.getAggregatedExperimentsResults(experimentIds, fromDate, toDate)
+    suspend fun getAggregatedExperimentsResultsCSV(experimentIds: List<Int>?, fromDate: String?, toDate: String?) =
+        apiService.getAggregatedExperimentsResultsCSV(experimentIds, fromDate, toDate)
+
+    suspend fun getAggregatedExperimentsResultsPlot(experimentIds: List<Int>?, fromDate: String?, toDate: String?) =
+        apiService.getAggregatedExperimentsResultsPlot(experimentIds, fromDate, toDate)
 }

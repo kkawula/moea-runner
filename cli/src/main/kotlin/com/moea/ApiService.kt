@@ -1,5 +1,6 @@
 package com.moea
 
+import okhttp3.ResponseBody
 import retrofit2.http.*
 
 
@@ -35,4 +36,18 @@ interface ApiService {
         @Query("fromDate") fromDate: String?,
         @Query("toDate") toDate: String?
     ): List<AggregatedExperimentResult>
+
+    @GET("experiments/aggregated-results/csv")
+    suspend fun getAggregatedExperimentsResultsCSV(
+        @Query("experimentIds") experimentIds: List<Int>?,
+        @Query("fromDate") fromDate: String?,
+        @Query("toDate") toDate: String?
+    ): String
+
+    @GET("experiments/aggregated-results/plot")
+    suspend fun getAggregatedExperimentsResultsPlot(
+        @Query("experimentIds") experimentIds: List<Int>?,
+        @Query("fromDate") fromDate: String?,
+        @Query("toDate") toDate: String?
+    ): ResponseBody
 }

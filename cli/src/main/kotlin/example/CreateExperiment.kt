@@ -9,7 +9,7 @@ fun main() = runBlocking {
 
     val apiClient = ApiClient()
     val experiment = NewExperiment(
-        evaluations = 1000,
+        evaluations = 10000,
         algorithms = listOf("NSGAII", "GDE3"),
         problems = listOf("UF1", "DTLZ2_2"),
         metrics = listOf("Hypervolume", "Spacing")

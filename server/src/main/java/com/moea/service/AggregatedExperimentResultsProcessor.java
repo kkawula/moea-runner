@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.moea.service.ExperimentService.convertStringToDate;
-import static com.moea.util.ChartComposer.saveCombinedChartAsPNG;
+import static com.moea.util.ChartComposer.createCombinedChart;
 
 @Component
 public class AggregatedExperimentResultsProcessor {
@@ -172,7 +172,7 @@ public class AggregatedExperimentResultsProcessor {
     }
 
     private byte[] createCombinedChartImage(List<JFreeChart> charts) {
-        BufferedImage image = saveCombinedChartAsPNG(charts);
+        BufferedImage image = createCombinedChart(charts);
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             ImageIO.write(image, "png", bos);
             return bos.toByteArray();

@@ -47,7 +47,7 @@ public class ChartComposer {
      * @return A {@code BufferedImage} object containing the combined chart image.
      *         The image can be exported or displayed as a single chart panel.
      */
-    public static BufferedImage saveCombinedChartAsPNG(List<JFreeChart> chartList) {
+    public static BufferedImage createCombinedChart(List<JFreeChart> chartList) {
         int size = chartList.size();
         int width = size > 1 ? 2 * WIDTH : WIDTH;
         int height = size % 2 == 0 ? HEIGHT * size / 2 : HEIGHT * (size / 2 + 1);

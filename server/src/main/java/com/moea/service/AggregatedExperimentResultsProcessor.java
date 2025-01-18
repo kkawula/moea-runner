@@ -160,7 +160,7 @@ public class AggregatedExperimentResultsProcessor {
             double[] y = ySeries.get(algorithm);
 
             plot.line(algorithm, x, y)
-                    .withPaint(colors[index % colors.length]); // Use cyclic colors for series
+                    .withPaint(colors[index % colors.length]);
             index++;
         }
 

@@ -264,7 +264,7 @@ public class ExperimentServiceTest {
         List<Long> experimentIds = List.of(1L, 2L, 3L);
         List<Experiment> experiments = TestConst.getAggregatedExperiments();
         Map<Long, List<ExperimentResult>> experimentsResults = TestConst.getExperimentResults();
-        List<AggregatedExperimentResultDTO> aggregatedExperiments= List.of(
+        List<AggregatedExperimentResultDTO> aggregatedExperiments = List.of(
                 AggregatedExperimentResultDTO.builder()
                         .problem(TestConst.getProblemDtlz22().getProblemName())
                         .algorithm(TestConst.getAlgorithmNsgaii().getAlgorithmName())

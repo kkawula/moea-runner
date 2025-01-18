@@ -24,9 +24,9 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -218,6 +218,32 @@ public class ExperimentControllerTest {
         //then
         mockMvc.perform(post("/experiments/1/repeat"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testDeleteExperiment_ValidId_ExpectedStatusOk() throws Exception {
+        // given
+        Long experimentId = 1L;
+
+        // when
+        doNothing().when(experimentService).deleteExperiment(experimentId);
+
+        // then
+        mockMvc.perform(delete("/experiments/{id}", experimentId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testDeleteExperimentsByGroupName_ValidGroupName_ExpectedStatusOk() throws Exception {
+        // given
+        String groupName = "testGroup";
+
+        // when
+        doNothing().when(experimentService).deleteExperimentsByGroupName(groupName);
+
+        // then
+        mockMvc.perform(delete("/experiments/group/{groupName}", groupName))
+                .andExpect(status().isOk());
     }
 
 }

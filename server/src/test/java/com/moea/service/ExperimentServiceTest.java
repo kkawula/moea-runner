@@ -281,10 +281,6 @@ public class ExperimentServiceTest {
                         .build()
         );
 
-        when(experimentRepository.findAll(any(Specification.class))).thenReturn(experiments);
-        when(experimentResultsRepository.findByExperimentId(1L)).thenReturn(experimentsResults.get(1L));
-        when(experimentResultsRepository.findByExperimentId(2L)).thenReturn(experimentsResults.get(2L));
-        when(experimentResultsRepository.findByExperimentId(3L)).thenReturn(experimentsResults.get(3L));
         when(aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(any(), any(), any(), any())).thenReturn(aggregatedExperiments);
         when(experimentsResultsAggregator.combineResults(experiments, experimentsResults)).thenReturn(aggregatedExperiments);
 
@@ -314,9 +310,35 @@ public class ExperimentServiceTest {
         assertEquals(300.0, resultDTO2.getResult().getMedian(), 0.01);
         assertEquals(124.72, resultDTO2.getResult().getStdDev(), 0.01);
 
-        // #TODO(Needs clarification)
-        verify(experimentRepository, times(0)).findAll(any(Specification.class));
-        verify(experimentResultsRepository, times(0)).findByExperimentId(anyLong());
+        verify(aggregatedExperimentResultsProcessor, times(1)).getAggregatedExperimentResultsJSON(any(), any(), any(), any());
+    }
+
+    @Test
+    void testDeleteExperiment_Success() {
+        // Given
+        Long experimentId = 1L;
+
+        doNothing().when(experimentRepository).deleteById(experimentId);
+
+        // When
+        experimentService.deleteExperiment(experimentId);
+
+        // Then
+        verify(experimentRepository, times(1)).deleteById(experimentId);
+    }
+
+    @Test
+    void testDeleteExperimentsByGroupName_Success() {
+        // Given
+        String groupName = "testGroup";
+
+        doNothing().when(experimentRepository).deleteByGroupName(groupName);
+
+        // When
+        experimentService.deleteExperimentsByGroupName(groupName);
+
+        // Then
+        verify(experimentRepository, times(1)).deleteByGroupName(groupName);
     }
 
 }

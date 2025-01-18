@@ -1,5 +1,6 @@
 package com.moea.service;
 
+import com.moea.ExperimentStatus;
 import com.moea.conversations.CSVUtil;
 import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.model.Experiment;
@@ -44,10 +45,21 @@ public class AggregatedExperimentResultsProcessor {
         this.experimentResultsRepository = experimentResultsRepository;
     }
 
-    public List<AggregatedExperimentResultDTO> getAggregatedExperiments(List<Long> experimentIds, String fromDate, String toDate) {
+    private List<AggregatedExperimentResultDTO> getAggregatedExperiments(List<Long> experimentIds, String fromDate, String toDate) {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withExperimentIds(experimentIds))
                 .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
         List<Experiment> experiments = experimentRepository.findAll(spec);
+
+        if (experiments.isEmpty()) {
+            throw new IllegalArgumentException("No experiments found");
+        }
+
+        boolean allFinished = experiments.stream()
+                .allMatch(experiment -> ExperimentStatus.FINISHED.equals(experiment.getStatus()));
+
+        if (!allFinished) {
+            throw new IllegalStateException("Not all experiments are finished. Aggregation is not possible.");
+        }
 
         Map<Long, List<ExperimentResult>> experimentsResults = new HashMap<>();
 
@@ -57,6 +69,10 @@ public class AggregatedExperimentResultsProcessor {
         }
 
         return experimentsResultsAggregator.combineResults(experiments, experimentsResults);
+    }
+
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResultsJSON(List<Long> experimentIds, String fromDate, String toDate) {
+        return getAggregatedExperiments(experimentIds, fromDate, toDate);
     }
 
     public String getAggregatedExperimentResultsCSV(List<Long> experimentIds, String fromDate, String toDate) {

@@ -27,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@Transactional
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ExperimentSpecificationsTest {
     @Autowired
@@ -58,6 +57,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
+    @Transactional
     public void testProblemNameSpecificationMvc_ExampleProblemName_ExpectedResultArraySizeEquals3() throws Exception {
         mockMvc.perform(get("/experiments")
                         .param("problemName", "ZDT1"))
@@ -77,6 +77,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
+    @Transactional
     public void testAlgorithmNameSpecificationMvc_ExampleAlgorithmName_ExpectedResultArraySizeEquals1() throws Exception {
         mockMvc.perform(get("/experiments")
                         .param("algorithmName", "NSGAII"))
@@ -96,6 +97,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
+    @Transactional
     public void testMetricNameSpecificationMvc_ExampleMetricName_ExpectedResultArraySizeEquals2() throws Exception {
         mockMvc.perform(get("/experiments")
                         .param("metricName", "Spacing"))
@@ -104,6 +106,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
+    @Transactional
     public void testWithinDateRangeSpecification_ValidDateRange_ExpectedResultArraySizeEquals3() {
         // GIVEN
         LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 0, 30, 0);
@@ -128,6 +131,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
+    @Transactional
     public void testWithinDateRangeSpecificationMvc_ValidDateRange_ExpectedResultArraySizeEquals3() throws Exception {
         // GIVEN
         List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
@@ -146,6 +150,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
+    @Transactional
     public void testSpecificationFromGivenDateToTheRest_ValidFromDate_ExpectedResultArraySizeEquals3() {
         // GIVEN
         LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 3, 30, 0);
@@ -169,6 +174,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
+    @Transactional
     public void testSpecificationFromGivenDateToTheRestMvc_ValidFromDate_ExpectedResultArraySizeEquals3() throws Exception {
         // GIVEN
         List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
@@ -186,6 +192,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
+    @Transactional
     public void testSpecificationToGivenDateToTheBeginning_ValidToDate_ExpectedResultArraySizeEquals4() {
         // GIVEN
         LocalDateTime toDate = LocalDateTime.of(2025, 1, 2, 2, 0, 0);
@@ -209,6 +216,7 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
+    @Transactional
     public void testSpecificationToGivenDateToTheBeginningMvc_ValidToDate_ExpectedResultArraySizeEquals4() throws Exception {
         // GIVEN
         List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
@@ -236,6 +244,35 @@ public class ExperimentSpecificationsTest {
 
         // THEN
         assertEquals(3, result.size());
+    }
+
+    @Test
+    public void testGroupNameSpecification_ValidGroupName_ExpectedResultArraySize() {
+        // GIVEN
+        String groupName = "group2";
+        experimentService.updateGroupName("GDE3", null, null, null, null, null, null, groupName);
+
+        Specification<Experiment> spec = Specification.where(experimentSpecifications.withGroupName(groupName));
+
+        // WHEN
+        List<Experiment> result = experimentRepository.findAll(spec);
+
+        // THEN
+        assertEquals(3, result.size());
+    }
+
+    @Test
+    public void testGroupNameSpecification_NullGroupName_ExpectedResultArraySize() {
+        // GIVEN
+        String groupName = null;
+
+        Specification<Experiment> spec = Specification.where(experimentSpecifications.withGroupName(groupName));
+
+        // WHEN
+        List<Experiment> result = experimentRepository.findAll(spec);
+
+        // THEN
+        assertEquals(5, result.size());
     }
 
 }

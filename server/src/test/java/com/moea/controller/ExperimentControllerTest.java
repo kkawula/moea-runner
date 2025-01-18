@@ -246,4 +246,92 @@ public class ExperimentControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    public void testUpdateGroupName_ValidRequest_ExpectedUpdatedExperimentList() throws Exception {
+        // given
+        String algorithmName = TestConst.getAlgorithmNsgaii().getAlgorithmName();
+        String problemName = TestConst.getProblemUf1().getProblemName();
+        String metricName = TestConst.getMetricHypervolume().getMetricName();
+        String status = "FINISHED";
+        String oldGroupName = "oldGroup";
+        String fromDate = "2023-01-01";
+        String toDate = "2023-12-31";
+        String groupName = "newGroup";
+
+        Experiment experiment1 = Experiment.builder()
+                .id(1L)
+                .groupName(groupName)
+                .build();
+        Experiment experiment2 = Experiment.builder()
+                .id(2L)
+                .groupName(groupName)
+                .build();
+
+        ExperimentDTO experimentDTO1 = ExperimentDTO.builder()
+                .id(1L)
+                .groupName(groupName)
+                .build();
+        ExperimentDTO experimentDTO2 = ExperimentDTO.builder()
+                .id(2L)
+                .groupName(groupName)
+                .build();
+
+        // when
+        when(experimentService.updateGroupName(
+                algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName))
+                .thenReturn(List.of(experiment1, experiment2));
+
+        when(experimentMapper.toDTO(experiment1)).thenReturn(experimentDTO1);
+        when(experimentMapper.toDTO(experiment2)).thenReturn(experimentDTO2);
+
+        // then
+        mockMvc.perform(patch("/experiments/group-name")
+                        .param("algorithmName", algorithmName)
+                        .param("problemName", problemName)
+                        .param("metricName", metricName)
+                        .param("status", status)
+                        .param("oldGroupName", oldGroupName)
+                        .param("fromDate", fromDate)
+                        .param("toDate", toDate)
+                        .param("groupName", groupName))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].groupName").value(groupName))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].groupName").value(groupName));
+    }
+
+    @Test
+    public void testUpdateGroupName_ExperimentNotFound_ExpectedNotFoundStatus() throws Exception {
+        // given
+        String algorithmName = TestConst.getAlgorithmNsgaii().getAlgorithmName();
+        String problemName = TestConst.getProblemUf1().getProblemName();
+        String metricName = TestConst.getMetricHypervolume().getMetricName();
+        String status = "FINISHED";
+        String oldGroupName = "oldGroup";
+        String fromDate = "2023-01-01";
+        String toDate = "2023-12-31";
+        String groupName = "newGroup";
+
+        // when
+        when(experimentService.updateGroupName(
+                algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName))
+                .thenThrow(new ExperimentNotFoundException());
+
+        // then
+        mockMvc.perform(patch("/experiments/group-name")
+                        .param("algorithmName", algorithmName)
+                        .param("problemName", problemName)
+                        .param("metricName", metricName)
+                        .param("status", status)
+                        .param("oldGroupName", oldGroupName)
+                        .param("fromDate", fromDate)
+                        .param("toDate", toDate)
+                        .param("groupName", groupName))
+                .andExpect(status().isNotFound());
+    }
+
+
 }

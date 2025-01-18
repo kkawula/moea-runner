@@ -341,4 +341,55 @@ public class ExperimentServiceTest {
         verify(experimentRepository, times(1)).deleteByGroupName(groupName);
     }
 
+    @Test
+    void testUpdateGroupName_ValidParameters_SuccessfulUpdate() {
+        // Given
+        String algorithmName = TestConst.getAlgorithmNsgaii().getAlgorithmName();
+        String problemName = TestConst.getProblemUf1().getProblemName();
+        String status = "FINISHED";
+        String metricName = TestConst.getMetricHypervolume().getMetricName();
+        String oldGroupName = "oldGroup";
+        String fromDate = "2023-01-01 21:37:00";
+        String toDate = "2023-12-31 21:37:00";
+        String groupName = "newGroup";
+
+        Experiment experiment1 = Experiment.builder().id(1L).groupName(oldGroupName).build();
+        Experiment experiment2 = Experiment.builder().id(2L).groupName(oldGroupName).build();
+        List<Experiment> experiments = List.of(experiment1, experiment2);
+
+        when(experimentRepository.findAll(any(Specification.class))).thenReturn(experiments);
+
+        // When
+        List<Experiment> updatedExperiments = experimentService.updateGroupName(
+                algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName);
+
+        // Then
+        assertNotNull(updatedExperiments);
+        assertEquals(2, updatedExperiments.size());
+        assertEquals(groupName, updatedExperiments.get(0).getGroupName());
+        assertEquals(groupName, updatedExperiments.get(1).getGroupName());
+        verify(experimentRepository, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    void testUpdateGroupName_NoExperimentsFound_ThrowsException() {
+        // Given
+        String algorithmName = TestConst.getAlgorithmNsgaii().getAlgorithmName();
+        String problemName = TestConst.getProblemUf1().getProblemName();
+        String status = "FINISHED";
+        String metricName = TestConst.getMetricHypervolume().getMetricName();
+        String oldGroupName = "oldGroup";
+        String fromDate = "2023-01-01 21:37:00";
+        String toDate = "2023-12-31 21:37:00";
+        String groupName = "newGroup";
+
+        when(experimentRepository.findAll(any(Specification.class))).thenReturn(List.of());
+
+        // Then
+        assertThrows(ExperimentNotFoundException.class, () -> experimentService.updateGroupName(
+                algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName
+        ));
+        verify(experimentRepository, never()).save(any(Experiment.class));
+    }
+
 }

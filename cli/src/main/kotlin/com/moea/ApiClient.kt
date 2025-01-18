@@ -73,4 +73,8 @@ class ApiClient(baseUrl: String = BASE_URL) {
         filter.toDate,
         groupName
     )
+
+    suspend fun deleteExperiment(id: Long) = apiService.deleteExperiment(id)
+    suspend fun deleteExperimentsByGroupName(groupName: String) = apiService.deleteExperimentsByGroupName(groupName)
+
 }

@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.parameters.types.long
 import com.moea.ApiClient
 import com.moea.NewExperiment
 import com.moea.helpers.*
@@ -271,6 +272,48 @@ class UpdateGroupNameCommand : CliktCommand("group-name-update") {
                 experiments.forEach {
                     println(it.prettyRepr())
                 }
+            }
+        } finally {
+            apiClient.close()
+        }
+    }
+}
+
+class DeleteExperimentCommand : CliktCommand("experiment-delete") {
+    private val commonArgs by requireObject<CommonArgs>()
+
+    private val id by argument(help = "ID of the experiment to delete").long()
+
+    override fun run(): Unit = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
+        try {
+            val result = sendRequest(apiClient) { client ->
+                client.deleteExperiment(id)
+            }
+            result.onSuccess {
+                println("Experiment with ID $id has been successfully deleted.")
+            }
+        } finally {
+            apiClient.close()
+        }
+    }
+}
+
+class DeleteExperimentsByGroupNameCommand : CliktCommand("group-delete") {
+    private val commonArgs by requireObject<CommonArgs>()
+
+    private val groupName by argument(help = "Name of the group whose experiments will be deleted")
+
+    override fun run(): Unit = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
+        try {
+            val result = sendRequest(apiClient) { client ->
+                client.deleteExperimentsByGroupName(groupName)
+            }
+            result.onSuccess {
+                println("Experiments in group '$groupName' have been successfully deleted.")
             }
         } finally {
             apiClient.close()

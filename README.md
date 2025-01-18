@@ -62,6 +62,14 @@ To start server with created binary, run the following command:
 ./cli/build/install/moea-client/bin/moea-client group-name-update "new group name" --from-date "1410-01-01 11:59:59" --to-date "2077-01-01 11:59:59"
 ```
 
+```shell
+./cli/build/install/moea-client/bin/moea-client experiment-delete 1
+```
+
+```shell
+./cli/build/install/moea-client/bin/moea-client group-delete "new-group-name"
+```
+
 ## 4. Clean the environment
 
 ```shell

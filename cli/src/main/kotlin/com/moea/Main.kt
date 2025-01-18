@@ -32,6 +32,8 @@ fun main(args: Array<String>) {
             GetUniqueExperimentsCommand(),
             GetAggregatedExperimentsResultsCommand(),
             UpdateGroupNameCommand(),
+            DeleteExperimentCommand(),
+            DeleteExperimentsByGroupNameCommand()
         )
         .main(args)
 }

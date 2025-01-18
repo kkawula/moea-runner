@@ -4,14 +4,14 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
-import com.github.ajalt.clikt.parameters.options.convert
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.options.*
+import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.int
 import com.moea.ApiClient
 import com.moea.NewExperiment
 import com.moea.helpers.*
+import com.moea.helpers.FileOperations.saveResponseBodyToFile
+import com.moea.helpers.FileOperations.saveToFile
 import kotlinx.coroutines.runBlocking
 
 class ListExperimentsCommand : CliktCommand("experiments-list") {
@@ -187,17 +187,40 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
     private val toDate by option("--to-date", help = "Filter to date (\"yyyy-MM-dd HH:mm:ss\")").convert {
         convertDate(it)
     }
-
+    private val output by option("--output", "-o", help = "Output type").enum<OutputType>().default(OutputType.TERMINAL)
+    private val fileName by option("--fileName", "-f", help = "Name of the output file")
 
     override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
 
         try {
-            val result = sendRequest(apiClient) { client ->
-                client.getAggregatedExperimentsResults(experimentIds, fromDate, toDate)
-            }
-            result.onSuccess { results ->
-                printFormattedAggregatedResults(results)
+            when (output) {
+                OutputType.TERMINAL -> {
+                    val result = sendRequest(apiClient) { client ->
+                        client.getAggregatedExperimentsResults(experimentIds, fromDate, toDate)
+                    }
+                    result.onSuccess { results ->
+                        printFormattedAggregatedResults(results)
+                    }
+                }
+
+                OutputType.CSV -> {
+                    val result = sendRequest(apiClient) { client ->
+                        client.getAggregatedExperimentsResultsCSV(experimentIds, fromDate, toDate)
+                    }
+                    result.onSuccess { csvContent ->
+                        saveToFile(fileName, csvContent)
+                    }
+                }
+
+                OutputType.PLOT -> {
+                    val result = sendRequest(apiClient) { client ->
+                        client.getAggregatedExperimentsResultsPlot(experimentIds, fromDate, toDate)
+                    }
+                    result.onSuccess { plot ->
+                        saveResponseBodyToFile(fileName, plot)
+                    }
+                }
             }
         } finally {
             apiClient.close()

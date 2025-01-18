@@ -61,6 +61,4 @@ public class AggregatedResultsController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
-
-
 }

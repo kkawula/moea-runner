@@ -134,7 +134,7 @@ public class ExperimentService {
     }
 
     public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds, String fromDate, String toDate) {
-        return aggregatedExperimentResultsProcessor.getAggregatedExperiments(experimentIds, fromDate, toDate);
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(experimentIds, fromDate, toDate);
     }
 
     public String getAggregatedExperimentResultsCSV(List<Long> experimentIds, String fromDate, String toDate) {

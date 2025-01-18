@@ -68,7 +68,13 @@ public class AggregatedExperimentResultsProcessor {
             experimentsResults.put(experiment.getId(), experimentResults);
         }
 
-        return experimentsResultsAggregator.combineResults(experiments, experimentsResults);
+        List<AggregatedExperimentResultDTO> aggregatedResults = experimentsResultsAggregator.combineResults(experiments, experimentsResults);
+
+        if (aggregatedResults.isEmpty()) {
+            throw new IllegalArgumentException("No results found for the given experiments");
+        }
+
+        return aggregatedResults;
     }
 
     public List<AggregatedExperimentResultDTO> getAggregatedExperimentResultsJSON(List<Long> experimentIds, String fromDate, String toDate) {

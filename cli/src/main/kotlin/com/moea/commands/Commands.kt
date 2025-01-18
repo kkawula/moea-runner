@@ -21,6 +21,7 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
     private val problemName by option("--problem-name", help = "Filter by problem name")
     private val metricName by option("--metric-name", help = "Filter by metric name")
     private val status by option("--status", help = "Filter by status")
+    private val groupName by option("--group-name", help = "Filter by group name")
     private val fromDate by option(
         "--from-date",
         help = "Filter from date (\"yyyy-MM-dd HH:mm:ss\")"
@@ -38,6 +39,7 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
             problemName = problemName,
             metricName = metricName,
             status = status,
+            groupName = groupName,
             fromDate = fromDate,
             toDate = toDate
         )
@@ -220,6 +222,54 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
                     result.onSuccess { plot ->
                         saveResponseBodyToFile(fileName, plot)
                     }
+                }
+            }
+        } finally {
+            apiClient.close()
+        }
+    }
+}
+
+// TODO: Sometimes throws an error when updating the group name
+
+class UpdateGroupNameCommand : CliktCommand("group-name-update") {
+    private val commonArgs by requireObject<CommonArgs>()
+
+    private val groupName by argument()
+    private val algorithmName by option("--algorithm-name", help = "Filter by algorithm name")
+    private val problemName by option("--problem-name", help = "Filter by problem name")
+    private val metricName by option("--metric-name", help = "Filter by metric name")
+    private val status by option("--status", help = "Filter by status")
+    private val oldGroupName by option("--group-name", help = "Filter by group name")
+    private val fromDate by option(
+        "--from-date",
+        help = "Filter from date (\"yyyy-MM-dd HH:mm:ss\")"
+    ).convert { convertDate(it) }
+    private val toDate by option("--to-date", help = "Filter to date (\"yyyy-MM-dd HH:mm:ss\")").convert {
+        convertDate(
+            it
+        )
+    }
+
+    override fun run(): Unit = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+        val filter = ExperimentFilter(
+            algorithmName = algorithmName,
+            problemName = problemName,
+            metricName = metricName,
+            status = status,
+            groupName = oldGroupName,
+            fromDate = fromDate,
+            toDate = toDate
+        )
+
+        try {
+            val result = sendRequest(apiClient) { client ->
+                client.updateGroupName(filter, groupName)
+            }
+            result.onSuccess { experiments ->
+                experiments.forEach {
+                    println(it.prettyRepr())
                 }
             }
         } finally {

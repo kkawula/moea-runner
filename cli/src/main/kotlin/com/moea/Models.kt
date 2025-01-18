@@ -19,6 +19,7 @@ data class Experiment(
     val id: Long,
     val evaluations: Int,
     val status: String,
+    val groupName: String,
     val algorithms: List<String>,
     val problems: List<String>,
     val metrics: List<String>,

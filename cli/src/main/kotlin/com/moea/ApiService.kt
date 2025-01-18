@@ -11,6 +11,7 @@ interface ApiService {
         @Query("problemName") problemName: String? = null,
         @Query("metricName") metricName: String? = null,
         @Query("status") status: String? = null,
+        @Query("groupName") groupName: String? = null,
         @Query("fromDate") fromDate: String? = null,
         @Query("toDate") toDate: String? = null
     ): List<Experiment>
@@ -50,4 +51,16 @@ interface ApiService {
         @Query("fromDate") fromDate: String?,
         @Query("toDate") toDate: String?
     ): ResponseBody
+
+    @PATCH("experiments/group-name")
+    suspend fun updateGroupName(
+        @Query("algorithmName") algorithmName: String? = null,
+        @Query("problemName") problemName: String? = null,
+        @Query("metricName") metricName: String? = null,
+        @Query("status") status: String? = null,
+        @Query("oldGroupName") oldGroupName: String? = null,
+        @Query("fromDate") fromDate: String? = null,
+        @Query("toDate") toDate: String? = null,
+        @Query("groupName") groupName: String
+    ): List<Experiment>
 }

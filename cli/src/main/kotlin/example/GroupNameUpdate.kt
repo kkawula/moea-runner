@@ -6,7 +6,7 @@ import com.moea.helpers.prettyRepr
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
-    println("Getting experiment list...")
+    println("Updating group name...")
 
     val filter = ExperimentFilter(
         algorithmName = "NSGAII",
@@ -19,7 +19,7 @@ fun main() = runBlocking {
     )
 
     val apiClient = ApiClient()
-    val experiments = apiClient.getExperimentList(filter)
+    val experiments = apiClient.updateGroupName(filter, "new-group-name")
 
     experiments.forEach {
         println(it.prettyRepr())

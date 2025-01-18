@@ -9,6 +9,7 @@ data class ExperimentFilter(
     val problemName: String? = null,
     val metricName: String? = null,
     val status: String? = null,
+    val groupName: String? = null,
     val fromDate: String? = null,
     val toDate: String? = null
 )

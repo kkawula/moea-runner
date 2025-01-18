@@ -31,6 +31,7 @@ fun main(args: Array<String>) {
             RepeatExperimentCommand(),
             GetUniqueExperimentsCommand(),
             GetAggregatedExperimentsResultsCommand(),
+            UpdateGroupNameCommand(),
         )
         .main(args)
 }

@@ -12,3 +12,9 @@ data class ExperimentFilter(
     val fromDate: String? = null,
     val toDate: String? = null
 )
+
+enum class OutputType {
+    TERMINAL,
+    CSV,
+    PLOT
+}

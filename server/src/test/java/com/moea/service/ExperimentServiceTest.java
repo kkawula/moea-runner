@@ -286,7 +286,7 @@ public class ExperimentServiceTest {
         when(experimentResultsRepository.findByExperimentId(1L)).thenReturn(experimentsResults.get(1L));
         when(experimentResultsRepository.findByExperimentId(2L)).thenReturn(experimentsResults.get(2L));
         when(experimentResultsRepository.findByExperimentId(3L)).thenReturn(experimentsResults.get(3L));
-        when(aggregatedExperimentResultsProcessor.getAggregatedExperiments(any(), any(), any())).thenReturn(aggregatedExperiments);
+        when(aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(any(), any(), any())).thenReturn(aggregatedExperiments);
         when(experimentsResultsAggregator.combineResults(experiments, experimentsResults)).thenReturn(aggregatedExperiments);
 
         // When

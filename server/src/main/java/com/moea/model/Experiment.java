@@ -21,8 +21,11 @@ public class Experiment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "group_id")
-    private UUID groupId;
+    @Column(name = "invocation_id")
+    private UUID invocationId;
+
+    @Column(name = "group_name")
+    private String groupName;
 
     @Column(name = "evaluations")
     private int evaluations;

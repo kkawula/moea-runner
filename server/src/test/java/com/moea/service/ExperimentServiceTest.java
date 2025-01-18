@@ -71,7 +71,7 @@ public class ExperimentServiceTest {
         when(experimentRepository.findAll(any(Specification.class))).thenReturn(experiments);
 
         // When
-        List<Experiment> result = experimentService.getExperiments(null, null, null, null, null, null);
+        List<Experiment> result = experimentService.getExperiments(null, null, null, null, null, null, null);
 
         // Then
         assertNotNull(result);
@@ -241,14 +241,14 @@ public class ExperimentServiceTest {
     }
 
     @Test
-    void testGetUniqueExperiments_ExperimentsWithDifferentGroupId_ListWithDistinctGroupIdExperiments() {
+    void testGetUniqueExperiments_ExperimentsWithDifferentinvocationId_ListWithDistinctinvocationIdExperiments() {
         // Given
-        UUID groupId1 = UUID.randomUUID();
-        UUID groupId2 = UUID.randomUUID();
-        Experiment experiment1 = Experiment.builder().id(1L).groupId(groupId1).build();
-        Experiment experiment2 = Experiment.builder().id(2L).groupId(groupId2).build();
+        UUID invocationId1 = UUID.randomUUID();
+        UUID invocationId2 = UUID.randomUUID();
+        Experiment experiment1 = Experiment.builder().id(1L).invocationId(invocationId1).build();
+        Experiment experiment2 = Experiment.builder().id(2L).invocationId(invocationId2).build();
 
-        when(experimentRepository.findDistinctByGroupId()).thenReturn(List.of(experiment1, experiment2));
+        when(experimentRepository.findDistinctByInvocationId()).thenReturn(List.of(experiment1, experiment2));
 
         // When
         List<Experiment> uniqueExperiments = experimentService.getUniqueExperiments();
@@ -256,11 +256,11 @@ public class ExperimentServiceTest {
         // Then
         assertNotNull(uniqueExperiments);
         assertEquals(2, uniqueExperiments.size());
-        verify(experimentRepository, times(1)).findDistinctByGroupId();
+        verify(experimentRepository, times(1)).findDistinctByInvocationId();
     }
 
     @Test
-    void testGetAggregatedExperimentResults_ListOfExperimentsId_ExpectedCorrectAggregatedList() {
+    void testGetAggregatedExperimentResults_ListOfExperimentsId_ExpectedCorrectAggregatedListJSON() {
         // Given
         List<Long> experimentIds = List.of(1L, 2L, 3L);
         List<Experiment> experiments = TestConst.getAggregatedExperiments();
@@ -286,11 +286,11 @@ public class ExperimentServiceTest {
         when(experimentResultsRepository.findByExperimentId(1L)).thenReturn(experimentsResults.get(1L));
         when(experimentResultsRepository.findByExperimentId(2L)).thenReturn(experimentsResults.get(2L));
         when(experimentResultsRepository.findByExperimentId(3L)).thenReturn(experimentsResults.get(3L));
-        when(aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(any(), any(), any())).thenReturn(aggregatedExperiments);
+        when(aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(any(), any(), any(), any())).thenReturn(aggregatedExperiments);
         when(experimentsResultsAggregator.combineResults(experiments, experimentsResults)).thenReturn(aggregatedExperiments);
 
         // When
-        List<AggregatedExperimentResultDTO> results = experimentService.getAggregatedExperimentResults(experimentIds, null, null);
+        List<AggregatedExperimentResultDTO> results = experimentService.getAggregatedExperimentResultsJSON(experimentIds, null, null, null);
 
         // Then
         assertNotNull(results);

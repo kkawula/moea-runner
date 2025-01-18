@@ -26,11 +26,12 @@ public class AggregatedResultsController {
     @GetMapping()
     public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(
             @RequestParam(required = false) List<Long> experimentIds,
+            @RequestParam(required = false) String groupName,
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate
     ) {
         try {
-            return experimentService.getAggregatedExperimentResults(experimentIds, fromDate, toDate);
+            return experimentService.getAggregatedExperimentResultsJSON(experimentIds, groupName, fromDate, toDate);
         } catch (ExperimentNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -39,11 +40,12 @@ public class AggregatedResultsController {
     @GetMapping("/csv")
     public String getAggregatedResultsCsv(
             @RequestParam(required = false) List<Long> experimentIds,
+            @RequestParam(required = false) String groupName,
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate
     ) {
         try {
-            return experimentService.getAggregatedExperimentResultsCSV(experimentIds, fromDate, toDate);
+            return experimentService.getAggregatedExperimentResultsCSV(experimentIds, groupName, fromDate, toDate);
         } catch (ExperimentNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -52,11 +54,12 @@ public class AggregatedResultsController {
     @GetMapping("/plot")
     public ResponseEntity<byte[]> getAggregatedResultsPlot(
             @RequestParam(required = false) List<Long> experimentIds,
+            @RequestParam(required = false) String groupName,
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate
     ) {
         try {
-            return experimentService.getAggregatedExperimentResultsPlot(experimentIds, fromDate, toDate);
+            return experimentService.getAggregatedExperimentResultsPlot(experimentIds, groupName, fromDate, toDate);
         } catch (ExperimentNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }

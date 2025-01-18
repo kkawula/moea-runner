@@ -56,7 +56,7 @@ public class ExperimentControllerTest {
         ExperimentDTO experimentDTO2 = ExperimentDTO.builder().id(2L).build();
 
         //when
-        when(experimentService.getExperiments(null, null, null, null, null, null)).thenReturn(List.of(experiment1, experiment2));
+        when(experimentService.getExperiments(null, null, null, null, null, null, null)).thenReturn(List.of(experiment1, experiment2));
         when(experimentMapper.toDTO(any(Experiment.class))).thenReturn(experimentDTO1).thenReturn(experimentDTO2);
 
 
@@ -114,14 +114,14 @@ public class ExperimentControllerTest {
     }
 
     @Test
-    public void testGetUniqueExperiments_SampleDataOfExperimentsWithDifferentGroupId_ExpectedUniqueExperimentList() throws Exception {
+    public void testGetUniqueExperiments_SampleDataOfExperimentsWithDifferentinvocationId_ExpectedUniqueExperimentList() throws Exception {
         //given
-        UUID groupId1 = UUID.randomUUID();
-        UUID groupId2 = UUID.randomUUID();
-        Experiment experiment1 = Experiment.builder().id(1L).groupId(groupId1).build();
-        Experiment experiment3 = Experiment.builder().id(3L).groupId(groupId2).build();
-        ExperimentDTO experimentDTO1 = ExperimentDTO.builder().id(1L).groupId(groupId1).build();
-        ExperimentDTO experimentDTO3 = ExperimentDTO.builder().id(3L).groupId(groupId2).build();
+        UUID invocationId1 = UUID.randomUUID();
+        UUID invocationId2 = UUID.randomUUID();
+        Experiment experiment1 = Experiment.builder().id(1L).invocationId(invocationId1).build();
+        Experiment experiment3 = Experiment.builder().id(3L).invocationId(invocationId2).build();
+        ExperimentDTO experimentDTO1 = ExperimentDTO.builder().id(1L).invocationId(invocationId1).build();
+        ExperimentDTO experimentDTO3 = ExperimentDTO.builder().id(3L).invocationId(invocationId2).build();
 
         //when
         when(experimentService.getUniqueExperiments()).thenReturn(List.of(experiment1, experiment3));
@@ -134,8 +134,8 @@ public class ExperimentControllerTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].groupId").value(groupId1.toString()))
-                .andExpect(jsonPath("$[1].groupId").value(groupId2.toString()))
+                .andExpect(jsonPath("$[0].invocationId").value(invocationId1.toString()))
+                .andExpect(jsonPath("$[1].invocationId").value(invocationId2.toString()))
                 .andReturn();
 
     }
@@ -152,7 +152,7 @@ public class ExperimentControllerTest {
                 .build();
 
         //when
-        when(experimentService.getAggregatedExperimentResults(List.of(1L, 2L), null, null))
+        when(experimentService.getAggregatedExperimentResultsJSON(List.of(1L, 2L), null, null, null))
                 .thenReturn(List.of(aggregatedResult));
 
         //then
@@ -171,7 +171,7 @@ public class ExperimentControllerTest {
     @Test
     public void testGetAggregatedExperimentResults_InvalidExperimentIds_ExpectedNotFoundStatus() throws Exception {
         //when
-        when(experimentService.getAggregatedExperimentResults(List.of(1L, 2L), null, null))
+        when(experimentService.getAggregatedExperimentResultsJSON(List.of(1L, 2L), null, null, null))
                 .thenThrow(new ExperimentNotFoundException());
 
         //then

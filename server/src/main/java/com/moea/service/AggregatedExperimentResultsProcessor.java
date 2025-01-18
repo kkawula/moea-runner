@@ -3,6 +3,7 @@ package com.moea.service;
 import com.moea.ExperimentStatus;
 import com.moea.conversations.CSVUtil;
 import com.moea.dto.AggregatedExperimentResultDTO;
+import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.Experiment;
 import com.moea.model.ExperimentResult;
 import com.moea.repository.ExperimentRepository;
@@ -45,13 +46,14 @@ public class AggregatedExperimentResultsProcessor {
         this.experimentResultsRepository = experimentResultsRepository;
     }
 
-    private List<AggregatedExperimentResultDTO> getAggregatedExperiments(List<Long> experimentIds, String fromDate, String toDate) {
+    private List<AggregatedExperimentResultDTO> getAggregatedExperiments(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withExperimentIds(experimentIds))
+                .and(experimentSpecifications.withGroupName(groupName))
                 .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
         List<Experiment> experiments = experimentRepository.findAll(spec);
 
         if (experiments.isEmpty()) {
-            throw new IllegalArgumentException("No experiments found");
+            throw new ExperimentNotFoundException();
         }
 
         boolean allFinished = experiments.stream()
@@ -77,18 +79,18 @@ public class AggregatedExperimentResultsProcessor {
         return aggregatedResults;
     }
 
-    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResultsJSON(List<Long> experimentIds, String fromDate, String toDate) {
-        return getAggregatedExperiments(experimentIds, fromDate, toDate);
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResultsJSON(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
+        return getAggregatedExperiments(experimentIds, groupName, fromDate, toDate);
     }
 
-    public String getAggregatedExperimentResultsCSV(List<Long> experimentIds, String fromDate, String toDate) {
-        List<AggregatedExperimentResultDTO> aggregatedExperiments = getAggregatedExperiments(experimentIds, fromDate, toDate);
+    public String getAggregatedExperimentResultsCSV(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
+        List<AggregatedExperimentResultDTO> aggregatedExperiments = getAggregatedExperiments(experimentIds, groupName, fromDate, toDate);
 
         return CSVUtil.toCsv(aggregatedExperiments);
     }
 
-    public ResponseEntity<byte[]> getAggregatedExperimentResultsPlot(List<Long> experimentIds, String fromDate, String toDate) {
-        List<AggregatedExperimentResultDTO> aggregatedExperiments = getAggregatedExperiments(experimentIds, fromDate, toDate);
+    public ResponseEntity<byte[]> getAggregatedExperimentResultsPlot(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
+        List<AggregatedExperimentResultDTO> aggregatedExperiments = getAggregatedExperiments(experimentIds, groupName, fromDate, toDate);
 
         List<JFreeChart> charts = buildCharts(aggregatedExperiments);
         byte[] imageBytes = createCombinedChartImage(charts);

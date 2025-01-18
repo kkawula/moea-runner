@@ -78,4 +78,13 @@ public class ExperimentSpecifications {
         };
     }
 
+    public Specification<Experiment> withGroupName(String groupName) {
+        return (root, query, criteriaBuilder) -> {
+            if (groupName == null) {
+                return null;
+            }
+            return criteriaBuilder.equal(root.get("groupName"), groupName);
+        };
+    }
+
 }

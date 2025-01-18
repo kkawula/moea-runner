@@ -14,7 +14,8 @@ import java.util.UUID;
 @ToString
 public class ExperimentDTO {
     private Long id;
-    private UUID groupId;
+    private UUID invocationId;
+    private String groupName;
     private int evaluations;
     private String status;
     private LocalDateTime startDate;

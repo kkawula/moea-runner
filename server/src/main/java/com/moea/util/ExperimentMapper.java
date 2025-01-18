@@ -16,7 +16,8 @@ public class ExperimentMapper {
     public ExperimentDTO toDTO(Experiment experiment) {
         return ExperimentDTO.builder()
                 .id(experiment.getId())
-                .groupId(experiment.getGroupId())
+                .invocationId(experiment.getInvocationId())
+                .groupName(experiment.getGroupName())
                 .evaluations(experiment.getEvaluations())
                 .status(experiment.getStatus().name())
                 .startDate(experiment.getStartDate())
@@ -47,7 +48,7 @@ public class ExperimentMapper {
 
     public ExperimentDTO toRequestDTO(Experiment experiment) {
         return ExperimentDTO.builder()
-                .groupId(experiment.getGroupId())
+                .invocationId(experiment.getInvocationId())
                 .evaluations(experiment.getEvaluations())
                 .algorithms(experiment.getAlgorithms().stream()
                         .map(Algorithm::getAlgorithmName)
@@ -67,7 +68,7 @@ public class ExperimentMapper {
     public Experiment fromDTO(ExperimentDTO experimentDTO) {
         Experiment experiment = Experiment.builder()
                 .id(experimentDTO.getId())
-                .groupId(experimentDTO.getGroupId())
+                .invocationId(experimentDTO.getInvocationId())
                 .evaluations(experimentDTO.getEvaluations())
                 .status(experimentDTO.getStatus() == null ? ExperimentStatus.NEW : ExperimentStatus.valueOf(experimentDTO.getStatus()))
                 .build();

@@ -17,10 +17,10 @@ public class ExperimentRepositoryImpl implements ExperimentRepositoryCustom {
     }
 
     @Override
-    public List<Experiment> findDistinctByGroupId() {
+    public List<Experiment> findDistinctByInvocationId() {
         String jpql = """
                     SELECT e FROM Experiment e WHERE e.id IN (
-                                SELECT MIN(e.id) FROM Experiment e GROUP BY e.groupId
+                                SELECT MIN(e.id) FROM Experiment e GROUP BY e.invocationId
                                 )
                 """;
 

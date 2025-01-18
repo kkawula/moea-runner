@@ -31,17 +31,40 @@ public class ExperimentController {
             @RequestParam(required = false) String problemName,
             @RequestParam(required = false) String metricName,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String groupName,
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate
     ) {
         try {
             return experimentService.getExperiments(
-                            algorithmName, problemName, status, metricName, fromDate, toDate
+                            algorithmName, problemName, status, metricName, groupName, fromDate, toDate
                     ).stream()
                     .map(experimentMapper::toDTO)
                     .toList();
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PatchMapping("/group-name")
+    public List<ExperimentDTO> updateGroupName(
+            @RequestParam(required = false) String algorithmName,
+            @RequestParam(required = false) String problemName,
+            @RequestParam(required = false) String metricName,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String oldGroupName,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
+            @RequestParam String groupName
+    ) {
+        try {
+            return experimentService.updateGroupName(
+                            algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName
+                    ).stream()
+                    .map(experimentMapper::toDTO)
+                    .toList();
+        } catch (ExperimentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -85,7 +108,7 @@ public class ExperimentController {
             List<Long> experimentIds = new ArrayList<>();
             UUID groupId = UUID.randomUUID();
             ExperimentDTO experimentDTO = experimentMapper.toDto(experimentRequestDTO);
-            experimentDTO.setGroupId(groupId);
+            experimentDTO.setInvocationId(groupId);
             if (invocations == null) {
                 experimentIds.add(experimentService.createExperiment(experimentDTO));
             } else {

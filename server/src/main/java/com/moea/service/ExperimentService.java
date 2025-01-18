@@ -114,18 +114,19 @@ public class ExperimentService {
         return createExperiment(experimentDTO);
     }
 
-    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, String metric, String fromDate, String toDate) {
+    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, String metricName, String groupName, String fromDate, String toDate) {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withAlgorithm(algorithmName))
                 .and(experimentSpecifications.withProblem(problemName))
                 .and(experimentSpecifications.withStatus(status))
-                .and(experimentSpecifications.withMetric(metric))
+                .and(experimentSpecifications.withMetric(metricName))
+                .and(experimentSpecifications.withGroupName(groupName))
                 .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
 
         return experimentRepository.findAll(spec);
     }
 
     public List<Experiment> getUniqueExperiments() {
-        return experimentRepository.findDistinctByGroupId();
+        return experimentRepository.findDistinctByInvocationId();
     }
 
     public List<ExperimentResult> getExperimentResults(Long id) {
@@ -133,16 +134,16 @@ public class ExperimentService {
         return experimentResultsRepository.findByExperimentId(id);
     }
 
-    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds, String fromDate, String toDate) {
-        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(experimentIds, fromDate, toDate);
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResultsJSON(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(experimentIds, groupName, fromDate, toDate);
     }
 
-    public String getAggregatedExperimentResultsCSV(List<Long> experimentIds, String fromDate, String toDate) {
-        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsCSV(experimentIds, fromDate, toDate);
+    public String getAggregatedExperimentResultsCSV(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsCSV(experimentIds, groupName, fromDate, toDate);
     }
 
-    public ResponseEntity<byte[]> getAggregatedExperimentResultsPlot(List<Long> experimentIds, String fromDate, String toDate) {
-        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsPlot(experimentIds, fromDate, toDate);
+    public ResponseEntity<byte[]> getAggregatedExperimentResultsPlot(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsPlot(experimentIds, groupName, fromDate, toDate);
     }
 
     public ExperimentStatus getExperimentStatus(Long id) {
@@ -154,5 +155,22 @@ public class ExperimentService {
         Experiment experiment = experimentRepository.findById(experimentId).orElseThrow(ExperimentNotFoundException::new);
         experiment.setStatus(status);
         experimentRepository.save(experiment);
+    }
+
+    public List<Experiment> updateGroupName(
+            String algorithmName, String problemName, String status, String metricName, String oldGroupName, String fromDate, String toDate, String groupName
+    ) {
+        List<Experiment> experiments = getExperiments(algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate);
+
+        if (experiments.isEmpty()) {
+            throw new ExperimentNotFoundException();
+        }
+
+        experiments.forEach(experiment -> {
+            experiment.setGroupName(groupName);
+            experimentRepository.save(experiment);
+        });
+
+        return experiments;
     }
 }

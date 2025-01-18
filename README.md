@@ -50,6 +50,14 @@ To start server with created binary, run the following command:
 ./cli/build/install/moea-client/bin/moea-client aggregated-experiments-results 1 2 --from-date "1410-01-01 11:59:59" --to-date "2077-01-01 11:59:59"
 ```
 
+```shell
+./cli/build/install/moea-client/bin/moea-client aggregated-experiments-results 1 2 --from-date "1410-01-01 11:59:59" --to-date "2077-01-01 11:59:59" --output PLOT --file-name plot
+```
+
+```shell
+./cli/build/install/moea-client/bin/moea-client aggregated-experiments-results 1 2 --from-date "1410-01-01 11:59:59" --to-date "2077-01-01 11:59:59" --output CSV --file-name data
+```
+
 ## 4. Clean the environment
 
 ```shell

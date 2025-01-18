@@ -188,7 +188,7 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
         convertDate(it)
     }
     private val output by option("--output", "-o", help = "Output type").enum<OutputType>().default(OutputType.TERMINAL)
-    private val fileName by option("--fileName", "-f", help = "Name of the output file")
+    private val fileName by option("--file-name", "-f", help = "Name of the output file")
 
     override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)

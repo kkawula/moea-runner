@@ -250,7 +250,7 @@ public class ExperimentSpecificationsTest {
     public void testGroupNameSpecification_ValidGroupName_ExpectedResultArraySize() {
         // GIVEN
         String groupName = "group2";
-        experimentService.updateGroupName("GDE3", null, null, null, null, null, null, groupName);
+        experimentService.updateGroupName(null, "GDE3", null, null, null, null, null, null, groupName);
 
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withGroupName(groupName));
 

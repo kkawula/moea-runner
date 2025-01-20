@@ -70,7 +70,7 @@ public class ExperimentServiceTest {
         when(experimentRepository.findAll(any(Specification.class))).thenReturn(experiments);
 
         // When
-        List<Experiment> result = experimentService.getExperiments(null, null, null, null, null, null, null);
+        List<Experiment> result = experimentService.getExperiments(null, null, null, null, null, null, null, null);
 
         // Then
         assertNotNull(result);
@@ -361,7 +361,7 @@ public class ExperimentServiceTest {
 
         // When
         List<Experiment> updatedExperiments = experimentService.updateGroupName(
-                algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName);
+                null, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName);
 
         // Then
         assertNotNull(updatedExperiments);
@@ -387,7 +387,7 @@ public class ExperimentServiceTest {
 
         // Then
         assertThrows(ExperimentNotFoundException.class, () -> experimentService.updateGroupName(
-                algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName
+                null, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName
         ));
         verify(experimentRepository, never()).save(any(Experiment.class));
     }

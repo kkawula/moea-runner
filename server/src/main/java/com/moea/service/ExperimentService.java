@@ -116,8 +116,9 @@ public class ExperimentService {
         return createExperiment(experimentDTO);
     }
 
-    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, String metricName, String groupName, String fromDate, String toDate) {
-        Specification<Experiment> spec = Specification.where(experimentSpecifications.withAlgorithm(algorithmName))
+    public List<Experiment> getExperiments(List<Long> experimentIds, String algorithmName, String problemName, String status, String metricName, String groupName, String fromDate, String toDate) {
+        Specification<Experiment> spec = Specification.where(experimentSpecifications.withExperimentIds(experimentIds))
+                .and(experimentSpecifications.withAlgorithm(algorithmName))
                 .and(experimentSpecifications.withProblem(problemName))
                 .and(experimentSpecifications.withStatus(status))
                 .and(experimentSpecifications.withMetric(metricName))
@@ -160,16 +161,18 @@ public class ExperimentService {
     }
 
     public List<Experiment> updateGroupName(
-            String algorithmName, String problemName, String status, String metricName, String oldGroupName, String fromDate, String toDate, String groupName
+            List<Long> experimentIds, String algorithmName, String problemName, String status, String metricName, String oldGroupName, String fromDate, String toDate, String groupName
     ) {
-        List<Experiment> experiments = getExperiments(algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate);
+        List<Experiment> experiments = getExperiments(experimentIds, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate);
 
         if (experiments.isEmpty()) {
             throw new ExperimentNotFoundException();
         }
+
         experiments.forEach(experiment -> {
             experiment.setGroupName(groupName);
         });
+
         experimentRepository.saveAll(experiments);
 
         return experiments;

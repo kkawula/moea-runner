@@ -27,6 +27,7 @@ public class ExperimentController {
 
     @GetMapping
     public List<ExperimentDTO> getExperiments(
+            @RequestParam(required = false) List<Long> experimentIds,
             @RequestParam(required = false) String algorithmName,
             @RequestParam(required = false) String problemName,
             @RequestParam(required = false) String metricName,
@@ -37,7 +38,7 @@ public class ExperimentController {
     ) {
         try {
             return experimentService.getExperiments(
-                            algorithmName, problemName, status, metricName, groupName, fromDate, toDate
+                            experimentIds, algorithmName, problemName, status, metricName, groupName, fromDate, toDate
                     ).stream()
                     .map(experimentMapper::toDTO)
                     .toList();
@@ -48,6 +49,7 @@ public class ExperimentController {
 
     @PatchMapping("/group-name")
     public List<ExperimentDTO> updateGroupName(
+            @RequestParam(required = false) List<Long> experimentIds,
             @RequestParam(required = false) String algorithmName,
             @RequestParam(required = false) String problemName,
             @RequestParam(required = false) String metricName,
@@ -59,7 +61,7 @@ public class ExperimentController {
     ) {
         try {
             return experimentService.updateGroupName(
-                            algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName
+                            experimentIds, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName
                     ).stream()
                     .map(experimentMapper::toDTO)
                     .toList();

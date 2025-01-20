@@ -56,7 +56,7 @@ public class ExperimentControllerTest {
         ExperimentDTO experimentDTO2 = ExperimentDTO.builder().id(2L).build();
 
         //when
-        when(experimentService.getExperiments(null, null, null, null, null, null, null)).thenReturn(List.of(experiment1, experiment2));
+        when(experimentService.getExperiments(null, null, null, null, null, null, null, null)).thenReturn(List.of(experiment1, experiment2));
         when(experimentMapper.toDTO(any(Experiment.class))).thenReturn(experimentDTO1).thenReturn(experimentDTO2);
 
 
@@ -278,7 +278,7 @@ public class ExperimentControllerTest {
 
         // when
         when(experimentService.updateGroupName(
-                algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName))
+                null, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName))
                 .thenReturn(List.of(experiment1, experiment2));
 
         when(experimentMapper.toDTO(experiment1)).thenReturn(experimentDTO1);
@@ -317,7 +317,7 @@ public class ExperimentControllerTest {
 
         // when
         when(experimentService.updateGroupName(
-                algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName))
+                null, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName))
                 .thenThrow(new ExperimentNotFoundException());
 
         // then

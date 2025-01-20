@@ -7,6 +7,7 @@ import retrofit2.http.*
 interface ApiService {
     @GET("experiments")
     suspend fun getExperimentList(
+        @Query("experimentIds") experimentIds: List<Long>? = null,
         @Query("algorithmName") algorithmName: String? = null,
         @Query("problemName") problemName: String? = null,
         @Query("metricName") metricName: String? = null,
@@ -54,6 +55,7 @@ interface ApiService {
 
     @PATCH("experiments/group-name")
     suspend fun updateGroupName(
+        @Query("experimentIds") experimentIds: List<Long>? = null,
         @Query("algorithmName") algorithmName: String? = null,
         @Query("problemName") problemName: String? = null,
         @Query("metricName") metricName: String? = null,

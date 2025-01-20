@@ -14,7 +14,7 @@ fun main() = runBlocking {
         problems = listOf("UF1", "DTLZ2_2"),
         metrics = listOf("Hypervolume", "Spacing")
     )
-    val invocations = 2
+    val invocations = 5
 
     val createdExperiment = apiClient.createExperiment(experiment, invocations)
     println(createdExperiment)

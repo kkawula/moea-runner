@@ -9,6 +9,7 @@ fun main() = runBlocking {
     println("Updating group name...")
 
     val filter = ExperimentFilter(
+        experimentIds = listOf(2L, 3L),
         algorithmName = "NSGAII",
         problemName = "UF1",
         metricName = "Hypervolume",

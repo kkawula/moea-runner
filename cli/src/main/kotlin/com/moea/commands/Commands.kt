@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 class ListExperimentsCommand : CliktCommand("experiments-list") {
     private val commonArgs by requireObject<CommonArgs>()
 
+    private val experimentIds by argument("experiment-ids", help = "Space-separated list of experiment ids").long().multiple()
     private val algorithmName by option("--algorithm-name", help = "Filter by algorithm name")
     private val problemName by option("--problem-name", help = "Filter by problem name")
     private val metricName by option("--metric-name", help = "Filter by metric name")
@@ -36,6 +37,7 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
     override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
         val filter = ExperimentFilter(
+            experimentIds = experimentIds,
             algorithmName = algorithmName,
             problemName = problemName,
             metricName = metricName,
@@ -231,12 +233,11 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
     }
 }
 
-// TODO: Sometimes throws an error when updating the group name
-
 class UpdateGroupNameCommand : CliktCommand("group-name-update") {
     private val commonArgs by requireObject<CommonArgs>()
 
     private val groupName by argument()
+    private val experimentIds by argument("experiment-ids", help = "Space-separated list of experiment ids").long().multiple()
     private val algorithmName by option("--algorithm-name", help = "Filter by algorithm name")
     private val problemName by option("--problem-name", help = "Filter by problem name")
     private val metricName by option("--metric-name", help = "Filter by metric name")
@@ -255,6 +256,7 @@ class UpdateGroupNameCommand : CliktCommand("group-name-update") {
     override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
         val filter = ExperimentFilter(
+            experimentIds = experimentIds,
             algorithmName = algorithmName,
             problemName = problemName,
             metricName = metricName,

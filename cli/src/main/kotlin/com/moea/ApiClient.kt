@@ -39,6 +39,7 @@ class ApiClient(baseUrl: String = BASE_URL) {
     }
 
     suspend fun getExperimentList(filter: ExperimentFilter) = apiService.getExperimentList(
+        filter.experimentIds,
         filter.algorithmName,
         filter.problemName,
         filter.metricName,
@@ -64,6 +65,7 @@ class ApiClient(baseUrl: String = BASE_URL) {
         apiService.getAggregatedExperimentsResultsPlot(experimentIds, fromDate, toDate)
 
     suspend fun updateGroupName(filter: ExperimentFilter, groupName: String) = apiService.updateGroupName(
+        filter.experimentIds,
         filter.algorithmName,
         filter.problemName,
         filter.metricName,

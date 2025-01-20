@@ -63,4 +63,10 @@ interface ApiService {
         @Query("toDate") toDate: String? = null,
         @Query("groupName") groupName: String
     ): List<Experiment>
+
+    @DELETE("experiments/{id}")
+    suspend fun deleteExperiment(@Path("id") id: Long)
+
+    @DELETE("experiments/group/{groupName}")
+    suspend fun deleteExperimentsByGroupName(@Path("groupName") groupName: String)
 }

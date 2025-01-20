@@ -167,11 +167,10 @@ public class ExperimentService {
         if (experiments.isEmpty()) {
             throw new ExperimentNotFoundException();
         }
-
         experiments.forEach(experiment -> {
             experiment.setGroupName(groupName);
-            experimentRepository.save(experiment);
         });
+        experimentRepository.saveAll(experiments);
 
         return experiments;
     }

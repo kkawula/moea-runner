@@ -9,7 +9,7 @@ fun main() = runBlocking {
     println("Getting experiment list...")
 
     val filter = ExperimentFilter(
-        experimentIds = listOf(1L, 2L),
+        experimentIds = listOf(1, 2),
         algorithmName = "NSGAII",
         problemName = "UF1",
         metricName = "Hypervolume",

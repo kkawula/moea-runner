@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.parameters.types.long
 import com.moea.ApiClient
 import com.moea.NewExperiment
 import com.moea.helpers.*
@@ -17,10 +18,13 @@ import kotlinx.coroutines.runBlocking
 class ListExperimentsCommand : CliktCommand("experiments-list") {
     private val commonArgs by requireObject<CommonArgs>()
 
+    private val experimentIds by option("--experiment-ids", help = "Comma-separated list of experiment ids")
+        .convert { it.split(",").map(String::toInt) }
     private val algorithmName by option("--algorithm-name", help = "Filter by algorithm name")
     private val problemName by option("--problem-name", help = "Filter by problem name")
     private val metricName by option("--metric-name", help = "Filter by metric name")
     private val status by option("--status", help = "Filter by status")
+    private val groupName by option("--group-name", help = "Filter by group name")
     private val fromDate by option(
         "--from-date",
         help = "Filter from date (\"yyyy-MM-dd HH:mm:ss\")"
@@ -34,10 +38,12 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
     override fun run(): Unit = runBlocking {
         val apiClient = ApiClient(commonArgs.url)
         val filter = ExperimentFilter(
+            experimentIds = experimentIds,
             algorithmName = algorithmName,
             problemName = problemName,
             metricName = metricName,
             status = status,
+            groupName = groupName,
             fromDate = fromDate,
             toDate = toDate
         )
@@ -178,7 +184,7 @@ class GetUniqueExperimentsCommand : CliktCommand("unique-experiments") {
 class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experiments-results") {
     private val commonArgs by requireObject<CommonArgs>()
 
-    private val experimentIds by argument("experiment-ids", help = "Space-separated list of experiment ids").int()
+    private val experimentIds by option("--experiment-ids", help = "Space-separated list of experiment ids").int()
         .multiple()
     private val fromDate by option(
         "--from-date",
@@ -221,6 +227,97 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
                         saveResponseBodyToFile(fileName, plot)
                     }
                 }
+            }
+        } finally {
+            apiClient.close()
+        }
+    }
+}
+
+class UpdateGroupNameCommand : CliktCommand("group-name-update") {
+    private val commonArgs by requireObject<CommonArgs>()
+
+    private val groupName by argument()
+    private val experimentIds by option("--experiment-ids", help = "Comma-separated list of experiment ids")
+        .convert { it.split(",").map(String::toInt) }
+    private val algorithmName by option("--algorithm-name", help = "Filter by algorithm name")
+    private val problemName by option("--problem-name", help = "Filter by problem name")
+    private val metricName by option("--metric-name", help = "Filter by metric name")
+    private val status by option("--status", help = "Filter by status")
+    private val oldGroupName by option("--group-name", help = "Filter by group name")
+    private val fromDate by option(
+        "--from-date",
+        help = "Filter from date (\"yyyy-MM-dd HH:mm:ss\")"
+    ).convert { convertDate(it) }
+    private val toDate by option("--to-date", help = "Filter to date (\"yyyy-MM-dd HH:mm:ss\")").convert {
+        convertDate(
+            it
+        )
+    }
+
+    override fun run(): Unit = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+        val filter = ExperimentFilter(
+            experimentIds = experimentIds,
+            algorithmName = algorithmName,
+            problemName = problemName,
+            metricName = metricName,
+            status = status,
+            groupName = oldGroupName,
+            fromDate = fromDate,
+            toDate = toDate
+        )
+
+        try {
+            val result = sendRequest(apiClient) { client ->
+                client.updateGroupName(filter, groupName)
+            }
+            result.onSuccess { experiments ->
+                experiments.forEach {
+                    println(it.prettyRepr())
+                }
+            }
+        } finally {
+            apiClient.close()
+        }
+    }
+}
+
+class DeleteExperimentCommand : CliktCommand("experiment-delete") {
+    private val commonArgs by requireObject<CommonArgs>()
+
+    private val id by argument(help = "ID of the experiment to delete").long()
+
+    override fun run(): Unit = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
+        try {
+            val result = sendRequest(apiClient) { client ->
+                client.deleteExperiment(id)
+            }
+            result.onSuccess {
+                println("Experiment with ID $id has been successfully deleted.")
+            }
+        } finally {
+            apiClient.close()
+        }
+    }
+}
+
+class DeleteExperimentsByGroupNameCommand : CliktCommand("group-delete") {
+    private val commonArgs by requireObject<CommonArgs>()
+
+    private val groupName by argument(help = "Name of the group whose experiments will be deleted")
+
+    override fun run(): Unit = runBlocking {
+        val apiClient = ApiClient(commonArgs.url)
+
+        try {
+            val result = sendRequest(apiClient) { client ->
+                client.deleteExperimentsByGroupName(groupName)
+            }
+            result.onSuccess {
+                println("Experiments in group '$groupName' have been successfully deleted.")
             }
         } finally {
             apiClient.close()

@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface ExperimentRepositoryCustom {
 
-    List<Experiment> findDistinctByGroupId();
+    List<Experiment> findDistinctByInvocationId();
 
 }

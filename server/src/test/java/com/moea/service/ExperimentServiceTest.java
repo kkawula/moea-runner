@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,7 +61,7 @@ public class ExperimentServiceTest {
     private ExperimentService experimentService;
 
     @Test
-    void testGetExperiments_SampleOfExperimentsData_ExpectedCorrectResultBody() throws ParseException {
+    void testGetExperiments_SampleOfExperimentsData_ExpectedCorrectResultBody() {
         // Given
         Experiment experiment1 = Experiment.builder().id(1L).evaluations(100).status(ExperimentStatus.RUNNING).build();
         Experiment experiment2 = Experiment.builder().id(2L).evaluations(200).status(ExperimentStatus.FINISHED).build();
@@ -71,7 +70,7 @@ public class ExperimentServiceTest {
         when(experimentRepository.findAll(any(Specification.class))).thenReturn(experiments);
 
         // When
-        List<Experiment> result = experimentService.getExperiments(null, null, null, null, null, null);
+        List<Experiment> result = experimentService.getExperiments(null, null, null, null, null, null, null, null);
 
         // Then
         assertNotNull(result);
@@ -241,14 +240,14 @@ public class ExperimentServiceTest {
     }
 
     @Test
-    void testGetUniqueExperiments_ExperimentsWithDifferentGroupId_ListWithDistinctGroupIdExperiments() {
+    void testGetUniqueExperiments_ExperimentsWithDifferentinvocationId_ListWithDistinctinvocationIdExperiments() {
         // Given
-        UUID groupId1 = UUID.randomUUID();
-        UUID groupId2 = UUID.randomUUID();
-        Experiment experiment1 = Experiment.builder().id(1L).groupId(groupId1).build();
-        Experiment experiment2 = Experiment.builder().id(2L).groupId(groupId2).build();
+        UUID invocationId1 = UUID.randomUUID();
+        UUID invocationId2 = UUID.randomUUID();
+        Experiment experiment1 = Experiment.builder().id(1L).invocationId(invocationId1).build();
+        Experiment experiment2 = Experiment.builder().id(2L).invocationId(invocationId2).build();
 
-        when(experimentRepository.findDistinctByGroupId()).thenReturn(List.of(experiment1, experiment2));
+        when(experimentRepository.findDistinctByInvocationId()).thenReturn(List.of(experiment1, experiment2));
 
         // When
         List<Experiment> uniqueExperiments = experimentService.getUniqueExperiments();
@@ -256,16 +255,16 @@ public class ExperimentServiceTest {
         // Then
         assertNotNull(uniqueExperiments);
         assertEquals(2, uniqueExperiments.size());
-        verify(experimentRepository, times(1)).findDistinctByGroupId();
+        verify(experimentRepository, times(1)).findDistinctByInvocationId();
     }
 
     @Test
-    void testGetAggregatedExperimentResults_ListOfExperimentsId_ExpectedCorrectAggregatedList() {
+    void testGetAggregatedExperimentResults_ListOfExperimentsId_ExpectedCorrectAggregatedListJSON() {
         // Given
         List<Long> experimentIds = List.of(1L, 2L, 3L);
         List<Experiment> experiments = TestConst.getAggregatedExperiments();
         Map<Long, List<ExperimentResult>> experimentsResults = TestConst.getExperimentResults();
-        List<AggregatedExperimentResultDTO> aggregatedExperiments= List.of(
+        List<AggregatedExperimentResultDTO> aggregatedExperiments = List.of(
                 AggregatedExperimentResultDTO.builder()
                         .problem(TestConst.getProblemDtlz22().getProblemName())
                         .algorithm(TestConst.getAlgorithmNsgaii().getAlgorithmName())
@@ -282,15 +281,11 @@ public class ExperimentServiceTest {
                         .build()
         );
 
-        when(experimentRepository.findAll(any(Specification.class))).thenReturn(experiments);
-        when(experimentResultsRepository.findByExperimentId(1L)).thenReturn(experimentsResults.get(1L));
-        when(experimentResultsRepository.findByExperimentId(2L)).thenReturn(experimentsResults.get(2L));
-        when(experimentResultsRepository.findByExperimentId(3L)).thenReturn(experimentsResults.get(3L));
-        when(aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(any(), any(), any())).thenReturn(aggregatedExperiments);
+        when(aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(any(), any(), any(), any())).thenReturn(aggregatedExperiments);
         when(experimentsResultsAggregator.combineResults(experiments, experimentsResults)).thenReturn(aggregatedExperiments);
 
         // When
-        List<AggregatedExperimentResultDTO> results = experimentService.getAggregatedExperimentResults(experimentIds, null, null);
+        List<AggregatedExperimentResultDTO> results = experimentService.getAggregatedExperimentResultsJSON(experimentIds, null, null, null);
 
         // Then
         assertNotNull(results);
@@ -315,9 +310,86 @@ public class ExperimentServiceTest {
         assertEquals(300.0, resultDTO2.getResult().getMedian(), 0.01);
         assertEquals(124.72, resultDTO2.getResult().getStdDev(), 0.01);
 
-        // #TODO(Needs clarification)
-        verify(experimentRepository, times(0)).findAll(any(Specification.class));
-        verify(experimentResultsRepository, times(0)).findByExperimentId(anyLong());
+        verify(aggregatedExperimentResultsProcessor, times(1)).getAggregatedExperimentResultsJSON(any(), any(), any(), any());
+    }
+
+    @Test
+    void testDeleteExperiment_Success() {
+        // Given
+        Long experimentId = 1L;
+
+        doNothing().when(experimentRepository).deleteById(experimentId);
+
+        // When
+        experimentService.deleteExperiment(experimentId);
+
+        // Then
+        verify(experimentRepository, times(1)).deleteById(experimentId);
+    }
+
+    @Test
+    void testDeleteExperimentsByGroupName_Success() {
+        // Given
+        String groupName = "testGroup";
+
+        doNothing().when(experimentRepository).deleteByGroupName(groupName);
+
+        // When
+        experimentService.deleteExperimentsByGroupName(groupName);
+
+        // Then
+        verify(experimentRepository, times(1)).deleteByGroupName(groupName);
+    }
+
+    @Test
+    void testUpdateGroupName_ValidParameters_SuccessfulUpdate() {
+        // Given
+        String algorithmName = TestConst.getAlgorithmNsgaii().getAlgorithmName();
+        String problemName = TestConst.getProblemUf1().getProblemName();
+        String status = "FINISHED";
+        String metricName = TestConst.getMetricHypervolume().getMetricName();
+        String oldGroupName = "oldGroup";
+        String fromDate = "2023-01-01 21:37:00";
+        String toDate = "2023-12-31 21:37:00";
+        String groupName = "newGroup";
+
+        Experiment experiment1 = Experiment.builder().id(1L).groupName(oldGroupName).build();
+        Experiment experiment2 = Experiment.builder().id(2L).groupName(oldGroupName).build();
+        List<Experiment> experiments = List.of(experiment1, experiment2);
+
+        when(experimentRepository.findAll(any(Specification.class))).thenReturn(experiments);
+
+        // When
+        List<Experiment> updatedExperiments = experimentService.updateGroupName(
+                null, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName);
+
+        // Then
+        assertNotNull(updatedExperiments);
+        assertEquals(2, updatedExperiments.size());
+        assertEquals(groupName, updatedExperiments.get(0).getGroupName());
+        assertEquals(groupName, updatedExperiments.get(1).getGroupName());
+        verify(experimentRepository, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    void testUpdateGroupName_NoExperimentsFound_ThrowsException() {
+        // Given
+        String algorithmName = TestConst.getAlgorithmNsgaii().getAlgorithmName();
+        String problemName = TestConst.getProblemUf1().getProblemName();
+        String status = "FINISHED";
+        String metricName = TestConst.getMetricHypervolume().getMetricName();
+        String oldGroupName = "oldGroup";
+        String fromDate = "2023-01-01 21:37:00";
+        String toDate = "2023-12-31 21:37:00";
+        String groupName = "newGroup";
+
+        when(experimentRepository.findAll(any(Specification.class))).thenReturn(List.of());
+
+        // Then
+        assertThrows(ExperimentNotFoundException.class, () -> experimentService.updateGroupName(
+                null, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName
+        ));
+        verify(experimentRepository, never()).save(any(Experiment.class));
     }
 
 }

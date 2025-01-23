@@ -6,6 +6,7 @@ import com.moea.model.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TestConst {
     private static final List<String> ALGORITHMS = List.of(
@@ -259,7 +260,9 @@ public class TestConst {
     }
 
     public static List<Experiment> getAggregatedExperiments() {
-        return AGGREGATED_EXPERIMENTS;
+        return AGGREGATED_EXPERIMENTS.stream()
+                .map(experiment -> experiment.toBuilder().id(null).build())
+                .collect(Collectors.toList());
     }
 
     public static List<String> getAlgorithms() {

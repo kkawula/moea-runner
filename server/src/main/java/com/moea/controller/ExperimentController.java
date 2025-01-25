@@ -1,6 +1,5 @@
 package com.moea.controller;
 
-import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.ExperimentDTO;
 import com.moea.dto.ExperimentRequestDTO;
 import com.moea.dto.ExperimentResultDTO;
@@ -28,16 +27,18 @@ public class ExperimentController {
 
     @GetMapping
     public List<ExperimentDTO> getExperiments(
+            @RequestParam(required = false) List<Long> experimentIds,
             @RequestParam(required = false) String algorithmName,
             @RequestParam(required = false) String problemName,
             @RequestParam(required = false) String metricName,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String groupName,
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate
     ) {
         try {
             return experimentService.getExperiments(
-                            algorithmName, problemName, status, metricName, fromDate, toDate
+                            experimentIds, algorithmName, problemName, status, metricName, groupName, fromDate, toDate
                     ).stream()
                     .map(experimentMapper::toDTO)
                     .toList();
@@ -46,24 +47,34 @@ public class ExperimentController {
         }
     }
 
+    @PatchMapping("/group-name")
+    public List<ExperimentDTO> updateGroupName(
+            @RequestParam(required = false) List<Long> experimentIds,
+            @RequestParam(required = false) String algorithmName,
+            @RequestParam(required = false) String problemName,
+            @RequestParam(required = false) String metricName,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String oldGroupName,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
+            @RequestParam String groupName
+    ) {
+        try {
+            return experimentService.updateGroupName(
+                            experimentIds, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate, groupName
+                    ).stream()
+                    .map(experimentMapper::toDTO)
+                    .toList();
+        } catch (ExperimentNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
+
     @GetMapping("/unique")
     public List<ExperimentDTO> getUniqueExperiments() {
         return experimentService.getUniqueExperiments().stream()
                 .map(experimentMapper::toDTO)
                 .toList();
-    }
-
-    @GetMapping("/aggregated-results")
-    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(
-            @RequestParam(required = false) List<Long> experimentIds,
-            @RequestParam(required = false) String fromDate,
-            @RequestParam(required = false) String toDate
-    ) {
-        try {
-            return experimentService.getAggregatedExperimentResults(experimentIds, fromDate, toDate);
-        } catch (ExperimentNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
     }
 
     @GetMapping("/{id}/results")
@@ -99,7 +110,7 @@ public class ExperimentController {
             List<Long> experimentIds = new ArrayList<>();
             UUID groupId = UUID.randomUUID();
             ExperimentDTO experimentDTO = experimentMapper.toDto(experimentRequestDTO);
-            experimentDTO.setGroupId(groupId);
+            experimentDTO.setInvocationId(groupId);
             if (invocations == null) {
                 experimentIds.add(experimentService.createExperiment(experimentDTO));
             } else {
@@ -128,5 +139,15 @@ public class ExperimentController {
         } catch (ExperimentNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteExperiment(@PathVariable Long id) {
+        experimentService.deleteExperiment(id);
+    }
+
+    @DeleteMapping("/group/{groupName}")
+    public void deleteExperimentsByGroupName(@PathVariable String groupName) {
+        experimentService.deleteExperimentsByGroupName(groupName);
     }
 }

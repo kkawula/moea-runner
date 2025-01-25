@@ -4,12 +4,12 @@ import com.moea.ApiClient
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
-    println("Getting experiment status...")
+    println("Deleting a single experiment...")
 
     val apiClient = ApiClient()
-    val experimentStatus = apiClient.getExperimentStatus(1)
+    val experimentId = 1L
 
-    println(experimentStatus)
+    apiClient.deleteExperiment(experimentId)
 
     apiClient.close()
 }

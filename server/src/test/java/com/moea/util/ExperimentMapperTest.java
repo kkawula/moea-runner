@@ -28,9 +28,9 @@ class ExperimentMapperTest {
         assertEquals(1L, experimentDTO.getId());
         assertEquals(100, experimentDTO.getEvaluations());
         assertEquals("RUNNING", experimentDTO.getStatus());
-        assertEquals(TestConst.getAlgorithms().subList(0,2), experimentDTO.getAlgorithms());
+        assertEquals(TestConst.getAlgorithms().subList(0, 2), experimentDTO.getAlgorithms());
         assertEquals(List.of(TestConst.getProblems().getFirst(), TestConst.getProblems().get(4)), experimentDTO.getProblems());
-        assertEquals(TestConst.getMetrics().subList(1,3), experimentDTO.getMetrics());
+        assertEquals(TestConst.getMetrics().subList(1, 3), experimentDTO.getMetrics());
     }
 
     @Test

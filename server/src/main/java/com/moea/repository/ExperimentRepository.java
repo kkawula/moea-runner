@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ExperimentRepository extends JpaRepository<Experiment, Long>, ExperimentRepositoryCustom, JpaSpecificationExecutor<Experiment> {
 
+    void deleteByGroupName(String groupName);
+
 }

@@ -202,7 +202,7 @@ class ApiClientTest : BaseTest() {
         mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
 
         runBlocking {
-            val experimentResults = apiClient.getAggregatedExperimentsResults(listOf(1))
+            val experimentResults = apiClient.getAggregatedExperimentsResults(listOf(1), null, null)
 
             assertEquals(1, experimentResults.size)
             assertEquals("UF1", experimentResults[0].problem)

@@ -20,9 +20,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest
 class ExperimentRepositoryImplTest {
     @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
     ExperimentController controllerUnderTest;
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private ExperimentRepositoryImpl experimentRepository;
     private MockMvc mockMvc;
@@ -33,18 +33,18 @@ class ExperimentRepositoryImplTest {
     }
 
     @Test
-    void findDistinctByGroupId() throws Exception {
+    void findDistinctByInvocationId() throws Exception {
         // GIVEN
         List<ExperimentDTO> experiments = TestConst.getExperiments();
         for (ExperimentDTO experiment : experiments) {
             mockMvc.perform(post("/experiments")
-                            .param("invocations", "10")
-                            .contentType("application/json")
-                            .content(objectMapper.writeValueAsString(experiment)));
+                    .param("invocations", "10")
+                    .contentType("application/json")
+                    .content(objectMapper.writeValueAsString(experiment)));
         }
 
         // WHEN
-        List<Experiment> result = experimentRepository.findDistinctByGroupId();
+        List<Experiment> result = experimentRepository.findDistinctByInvocationId();
 
         //then
         assertEquals(5, result.size());

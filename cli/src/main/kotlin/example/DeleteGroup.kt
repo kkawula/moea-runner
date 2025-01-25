@@ -4,12 +4,12 @@ import com.moea.ApiClient
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
-    println("Getting experiment status...")
+    println("Deleting experiments by group name...")
 
     val apiClient = ApiClient()
-    val experimentStatus = apiClient.getExperimentStatus(1)
+    val groupName = "new-group-name"
 
-    println(experimentStatus)
+    apiClient.deleteExperimentsByGroupName(groupName)
 
     apiClient.close()
 }

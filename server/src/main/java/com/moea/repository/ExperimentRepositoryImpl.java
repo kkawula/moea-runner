@@ -5,9 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 @Repository
 public class ExperimentRepositoryImpl implements ExperimentRepositoryCustom {
@@ -19,10 +17,10 @@ public class ExperimentRepositoryImpl implements ExperimentRepositoryCustom {
     }
 
     @Override
-    public List<Experiment> findDistinctByGroupId() {
+    public List<Experiment> findDistinctByInvocationId() {
         String jpql = """
                     SELECT e FROM Experiment e WHERE e.id IN (
-                                SELECT MIN(e.id) FROM Experiment e GROUP BY e.groupId
+                                SELECT MIN(e.id) FROM Experiment e GROUP BY e.invocationId
                                 )
                 """;
 

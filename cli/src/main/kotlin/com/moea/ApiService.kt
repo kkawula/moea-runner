@@ -1,15 +1,18 @@
 package com.moea
 
+import okhttp3.ResponseBody
 import retrofit2.http.*
 
 
 interface ApiService {
     @GET("experiments")
     suspend fun getExperimentList(
+        @Query("experimentIds") experimentIds: List<Int>? = null,
         @Query("algorithmName") algorithmName: String? = null,
         @Query("problemName") problemName: String? = null,
         @Query("metricName") metricName: String? = null,
         @Query("status") status: String? = null,
+        @Query("groupName") groupName: String? = null,
         @Query("fromDate") fromDate: String? = null,
         @Query("toDate") toDate: String? = null
     ): List<Experiment>
@@ -30,5 +33,42 @@ interface ApiService {
     suspend fun getUniqueExperiments(): List<Experiment>
 
     @GET("experiments/aggregated-results")
-    suspend fun getAggregatedExperimentsResults(@Query("experimentIds") experimentIds: List<Int>): List<AggregatedExperimentResult>
+    suspend fun getAggregatedExperimentsResults(
+        @Query("experimentIds") experimentIds: List<Int>?,
+        @Query("fromDate") fromDate: String?,
+        @Query("toDate") toDate: String?
+    ): List<AggregatedExperimentResult>
+
+    @GET("experiments/aggregated-results/csv")
+    suspend fun getAggregatedExperimentsResultsCSV(
+        @Query("experimentIds") experimentIds: List<Int>?,
+        @Query("fromDate") fromDate: String?,
+        @Query("toDate") toDate: String?
+    ): String
+
+    @GET("experiments/aggregated-results/plot")
+    suspend fun getAggregatedExperimentsResultsPlot(
+        @Query("experimentIds") experimentIds: List<Int>?,
+        @Query("fromDate") fromDate: String?,
+        @Query("toDate") toDate: String?
+    ): ResponseBody
+
+    @PATCH("experiments/group-name")
+    suspend fun updateGroupName(
+        @Query("experimentIds") experimentIds: List<Int>? = null,
+        @Query("algorithmName") algorithmName: String? = null,
+        @Query("problemName") problemName: String? = null,
+        @Query("metricName") metricName: String? = null,
+        @Query("status") status: String? = null,
+        @Query("oldGroupName") oldGroupName: String? = null,
+        @Query("fromDate") fromDate: String? = null,
+        @Query("toDate") toDate: String? = null,
+        @Query("groupName") groupName: String
+    ): List<Experiment>
+
+    @DELETE("experiments/{id}")
+    suspend fun deleteExperiment(@Path("id") id: Long)
+
+    @DELETE("experiments/group/{groupName}")
+    suspend fun deleteExperimentsByGroupName(@Path("groupName") groupName: String)
 }

@@ -7,12 +7,13 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-const val columnWidth: Int = 23;
+const val columnWidth: Int = 23
 
 fun Experiment.prettyRepr(): String {
     return "Experiment $id\n" +
             "Evaluations: $evaluations\n" +
             "Status: $status\n" +
+            "Group name: $groupName\n" +
             "Algorithms: ${algorithms.joinToString { it }}\n" +
             "Problems: ${problems.joinToString { it }}\n" +
             "Metrics: ${metrics.joinToString { it }}\n"

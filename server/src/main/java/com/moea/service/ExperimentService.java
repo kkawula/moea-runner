@@ -14,18 +14,20 @@ import com.moea.repository.ExperimentResultsRepository;
 import com.moea.specifications.ExperimentSpecifications;
 import com.moea.util.ExperimentMapper;
 import com.moea.util.ExperimentValidator;
-import com.moea.util.ExperimentsResultsAggregator;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import jakarta.transaction.Transactional;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
 import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -36,16 +38,16 @@ public class ExperimentService {
     private final ExperimentValidator experimentValidator;
     private final ExperimentMapper experimentMapper;
     private final ExperimentSpecifications experimentSpecifications;
-    private final ExperimentsResultsAggregator experimentsResultsAggregator;
+    private final AggregatedExperimentResultsProcessor aggregatedExperimentResultsProcessor;
 
-    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications, ExperimentsResultsAggregator experimentsResultsAggregator) {
+    public ExperimentService(ExperimentRepository experimentRepository, ExperimentResultsRepository experimentResultsRepository, ExperimentRunnerService experimentRunnerService, ExperimentValidator experimentValidator, ExperimentMapper experimentMapper, ExperimentSpecifications experimentSpecifications, AggregatedExperimentResultsProcessor aggregatedExperimentResultsProcessor) {
         this.experimentRepository = experimentRepository;
         this.experimentResultsRepository = experimentResultsRepository;
         this.experimentRunnerService = experimentRunnerService;
         this.experimentValidator = experimentValidator;
         this.experimentMapper = experimentMapper;
         this.experimentSpecifications = experimentSpecifications;
-        this.experimentsResultsAggregator = experimentsResultsAggregator;
+        this.aggregatedExperimentResultsProcessor = aggregatedExperimentResultsProcessor;
     }
 
     public static LocalDateTime convertStringToDate(String dateString) {
@@ -63,6 +65,7 @@ public class ExperimentService {
                 .observeOn(Schedulers.io())
                 .doOnComplete(() -> experimentRunnerService.saveExperimentResults(newExperimentID, results))
                 .doOnError(e -> updateExperimentStatus(newExperimentID, ExperimentStatus.ERROR))
+                .onErrorComplete()
                 .subscribe();
 
         return newExperimentID;
@@ -113,18 +116,20 @@ public class ExperimentService {
         return createExperiment(experimentDTO);
     }
 
-    public List<Experiment> getExperiments(String algorithmName, String problemName, String status, String metric, String fromDate, String toDate) {
-        Specification<Experiment> spec = Specification.where(experimentSpecifications.withAlgorithm(algorithmName))
+    public List<Experiment> getExperiments(List<Long> experimentIds, String algorithmName, String problemName, String status, String metricName, String groupName, String fromDate, String toDate) {
+        Specification<Experiment> spec = Specification.where(experimentSpecifications.withExperimentIds(experimentIds))
+                .and(experimentSpecifications.withAlgorithm(algorithmName))
                 .and(experimentSpecifications.withProblem(problemName))
                 .and(experimentSpecifications.withStatus(status))
-                .and(experimentSpecifications.withMetric(metric))
+                .and(experimentSpecifications.withMetric(metricName))
+                .and(experimentSpecifications.withGroupName(groupName))
                 .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
 
         return experimentRepository.findAll(spec);
     }
 
     public List<Experiment> getUniqueExperiments() {
-        return experimentRepository.findDistinctByGroupId();
+        return experimentRepository.findDistinctByInvocationId();
     }
 
     public List<ExperimentResult> getExperimentResults(Long id) {
@@ -132,19 +137,16 @@ public class ExperimentService {
         return experimentResultsRepository.findByExperimentId(id);
     }
 
-    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResults(List<Long> experimentIds, String fromDate, String toDate) {
-        Specification<Experiment> spec = Specification.where(experimentSpecifications.withExperimentIds(experimentIds))
-                .and(experimentSpecifications.withinDateRange(convertStringToDate(fromDate), convertStringToDate(toDate)));
-        List<Experiment> experiments = experimentRepository.findAll(spec);
+    public List<AggregatedExperimentResultDTO> getAggregatedExperimentResultsJSON(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsJSON(experimentIds, groupName, fromDate, toDate);
+    }
 
-        Map<Long, List<ExperimentResult>> experimentsResults = new HashMap<>();
+    public String getAggregatedExperimentResultsCSV(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsCSV(experimentIds, groupName, fromDate, toDate);
+    }
 
-        for (Experiment experiment : experiments) {
-            List<ExperimentResult> experimentResults = experimentResultsRepository.findByExperimentId(experiment.getId());
-            experimentsResults.put(experiment.getId(), experimentResults);
-        }
-
-        return experimentsResultsAggregator.combineResults(experiments, experimentsResults);
+    public ResponseEntity<byte[]> getAggregatedExperimentResultsPlot(List<Long> experimentIds, String groupName, String fromDate, String toDate) {
+        return aggregatedExperimentResultsProcessor.getAggregatedExperimentResultsPlot(experimentIds, groupName, fromDate, toDate);
     }
 
     public ExperimentStatus getExperimentStatus(Long id) {
@@ -156,5 +158,32 @@ public class ExperimentService {
         Experiment experiment = experimentRepository.findById(experimentId).orElseThrow(ExperimentNotFoundException::new);
         experiment.setStatus(status);
         experimentRepository.save(experiment);
+    }
+
+    public List<Experiment> updateGroupName(
+            List<Long> experimentIds, String algorithmName, String problemName, String status, String metricName, String oldGroupName, String fromDate, String toDate, String groupName
+    ) {
+        List<Experiment> experiments = getExperiments(experimentIds, algorithmName, problemName, status, metricName, oldGroupName, fromDate, toDate);
+
+        if (experiments.isEmpty()) {
+            throw new ExperimentNotFoundException();
+        }
+
+        experiments.forEach(experiment -> {
+            experiment.setGroupName(groupName);
+        });
+
+        experimentRepository.saveAll(experiments);
+
+        return experiments;
+    }
+
+    public void deleteExperiment(Long id) {
+        experimentRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteExperimentsByGroupName(String groupName) {
+        experimentRepository.deleteByGroupName(groupName);
     }
 }

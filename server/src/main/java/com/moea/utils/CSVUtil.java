@@ -1,4 +1,4 @@
-package com.moea.converters;
+package com.moea.utils;
 
 import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.AggregatedStats;

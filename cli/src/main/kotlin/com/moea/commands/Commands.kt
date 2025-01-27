@@ -111,7 +111,6 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
         )
 
         ApiClient(commonArgs.url).use { apiClient ->
-
             val result = sendRequest {
                 apiClient.createExperiment(newExperiment, invocations)
             }
@@ -145,7 +144,6 @@ class GetUniqueExperimentsCommand : CliktCommand("unique-experiments") {
 
     override fun run(): Unit = runBlocking {
         ApiClient(commonArgs.url).use { apiClient ->
-
             val result = sendRequest {
                 apiClient.getUniqueExperiments()
             }
@@ -242,7 +240,6 @@ class UpdateGroupNameCommand : CliktCommand("group-name-update") {
         )
 
         ApiClient(commonArgs.url).use { apiClient ->
-
             val result = sendRequest {
                 apiClient.updateGroupName(filter, groupName)
             }
@@ -262,7 +259,6 @@ class DeleteExperimentCommand : CliktCommand("experiment-delete") {
 
     override fun run(): Unit = runBlocking {
         ApiClient(commonArgs.url).use { apiClient ->
-
             val result = sendRequest {
                 apiClient.deleteExperiment(id)
             }

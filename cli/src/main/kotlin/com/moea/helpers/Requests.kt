@@ -1,7 +1,6 @@
 package com.moea.helpers
 
 import com.google.gson.Gson
-import com.moea.ApiClient
 import retrofit2.HttpException
 
 data class ApiErrorResponse(
@@ -13,11 +12,10 @@ data class ApiErrorResponse(
 )
 
 suspend fun <T> sendRequest(
-    apiClient: ApiClient,
-    action: suspend (ApiClient) -> T
+    action: suspend () -> T
 ): Result<T> {
     return try {
-        val result = action(apiClient)
+        val result = action()
         Result.success(result)
     } catch (e: HttpException) {
         handleHttpException(e)

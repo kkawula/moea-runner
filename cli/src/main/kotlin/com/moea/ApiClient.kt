@@ -11,7 +11,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 
 
-class ApiClient(baseUrl: String = BASE_URL) {
+class ApiClient(baseUrl: String = BASE_URL) : AutoCloseable {
     val okHttpClient: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
@@ -33,7 +33,7 @@ class ApiClient(baseUrl: String = BASE_URL) {
 
     val apiService: ApiService = retrofit.create(ApiService::class.java)
 
-    fun close() {
+    override fun close() {
         okHttpClient.dispatcher().executorService().shutdown()
         okHttpClient.connectionPool().evictAll()
     }

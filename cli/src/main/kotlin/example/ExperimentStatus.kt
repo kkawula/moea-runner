@@ -7,9 +7,7 @@ fun main() = runBlocking {
     println("Getting experiment status...")
 
     val apiClient = ApiClient()
-    val experimentStatus = apiClient.getExperimentStatus(1)
+    val experimentStatus = apiClient.use { apiClient.getExperimentStatus(1) }
 
     println(experimentStatus)
-
-    apiClient.close()
 }

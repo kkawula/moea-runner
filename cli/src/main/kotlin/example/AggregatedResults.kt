@@ -9,9 +9,13 @@ fun main() = runBlocking {
 
     val apiClient = ApiClient()
     val aggregatedResults =
-        apiClient.getAggregatedExperimentsResults(listOf(1, 2), "1410-01-01 11:59:59", "2077-12-31 11:59:59")
+        apiClient.use {
+            apiClient.getAggregatedExperimentsResults(
+                listOf(1, 2),
+                "1410-01-01 11:59:59",
+                "2077-12-31 11:59:59"
+            )
+        }
 
     printFormattedAggregatedResults(aggregatedResults)
-
-    apiClient.close()
 }

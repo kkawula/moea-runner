@@ -10,7 +10,7 @@ import com.moea.exceptions.ExperimentNotFoundException;
 import com.moea.model.Experiment;
 import com.moea.model.ExperimentResult;
 import com.moea.service.ExperimentService;
-import com.moea.util.ExperimentMapper;
+import com.moea.helpers.ExperimentMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

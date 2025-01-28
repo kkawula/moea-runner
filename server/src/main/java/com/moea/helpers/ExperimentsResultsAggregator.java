@@ -1,4 +1,4 @@
-package com.moea.util;
+package com.moea.helpers;
 
 import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.AggregatedStats;

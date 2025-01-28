@@ -20,11 +20,9 @@ fun main() = runBlocking {
     )
 
     val apiClient = ApiClient()
-    val experiments = apiClient.getExperimentList(filter)
+    val experiments = apiClient.use { apiClient.getExperimentList(filter) }
 
     experiments.forEach {
         println(it.prettyRepr())
     }
-
-    apiClient.close()
 }

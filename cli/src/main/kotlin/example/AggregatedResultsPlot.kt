@@ -9,9 +9,13 @@ fun main() = runBlocking {
 
     val apiClient = ApiClient()
     val aggregatedResultsPlotResponseBody =
-        apiClient.getAggregatedExperimentsResultsPlot(listOf(1, 2), "1410-01-01 11:59:59", "2077-12-31 11:59:59")
+        apiClient.use {
+            apiClient.getAggregatedExperimentsResultsPlot(
+                listOf(1, 2),
+                "1410-01-01 11:59:59",
+                "2077-12-31 11:59:59"
+            )
+        }
 
     saveResponseBodyToFile("plot", aggregatedResultsPlotResponseBody)
-
-    apiClient.close()
 }

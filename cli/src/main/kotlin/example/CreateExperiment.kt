@@ -16,8 +16,6 @@ fun main() = runBlocking {
     )
     val invocations = 5
 
-    val createdExperiment = apiClient.createExperiment(experiment, invocations)
+    val createdExperiment = apiClient.use { client -> client.createExperiment(experiment, invocations) }
     println(createdExperiment)
-
-    apiClient.close()
 }

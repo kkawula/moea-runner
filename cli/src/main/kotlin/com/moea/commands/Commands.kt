@@ -3,7 +3,6 @@ package com.moea.commands
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.int
@@ -36,7 +35,6 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
     }
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
         val filter = ExperimentFilter(
             experimentIds = experimentIds,
             algorithmName = algorithmName,
@@ -48,17 +46,13 @@ class ListExperimentsCommand : CliktCommand("experiments-list") {
             toDate = toDate
         )
 
-        try {
-            val result = sendRequest(apiClient) { client ->
-                client.getExperimentList(filter)
-            }
+        ApiClient(commonArgs.url).use { apiClient ->
+            val result = sendRequest { apiClient.getExperimentList(filter) }
             result.onSuccess { experiments ->
                 experiments.forEach {
                     println(it.prettyRepr())
                 }
             }
-        } finally {
-            apiClient.close()
         }
     }
 }
@@ -69,17 +63,13 @@ class GetExperimentResultsCommand : CliktCommand("experiment-results") {
     private val id by argument().int()
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
-
-        try {
-            val result = sendRequest(apiClient) { client ->
-                client.getExperimentResults(id)
+        ApiClient(commonArgs.url).use { apiClient ->
+            val result = sendRequest {
+                apiClient.getExperimentResults(id)
             }
             result.onSuccess { results ->
                 printFormattedResults(results)
             }
-        } finally {
-            apiClient.close()
         }
     }
 }
@@ -90,17 +80,13 @@ class GetExperimentStatusCommand : CliktCommand("experiment-status") {
     private val id by argument().int()
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
-
-        try {
-            val result = sendRequest(apiClient) { client ->
-                client.getExperimentStatus(id)
+        ApiClient(commonArgs.url).use { apiClient ->
+            val result = sendRequest {
+                apiClient.getExperimentStatus(id)
             }
             result.onSuccess { status ->
                 println("Experiment $id status: $status")
             }
-        } finally {
-            apiClient.close()
         }
     }
 }
@@ -116,7 +102,6 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
     private val invocations by option("--invocations", help = "Number of invocations").int()
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
 
         val newExperiment = NewExperiment(
             evaluations = evaluations,
@@ -125,15 +110,13 @@ class CreateExperimentCommand : CliktCommand("experiment-create") {
             metrics = metrics,
         )
 
-        try {
-            val result = sendRequest(apiClient) { client ->
-                client.createExperiment(newExperiment, invocations)
+        ApiClient(commonArgs.url).use { apiClient ->
+            val result = sendRequest {
+                apiClient.createExperiment(newExperiment, invocations)
             }
             result.onSuccess { experiment ->
                 println("Experiment created with id: $experiment")
             }
-        } finally {
-            apiClient.close()
         }
     }
 }
@@ -145,17 +128,13 @@ class RepeatExperimentCommand : CliktCommand("experiment-repeat") {
     private val invocations by option("--invocations", help = "Number of invocations").int()
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
-
-        try {
-            val result = sendRequest(apiClient) { client ->
-                client.repeatExperiment(id, invocations)
+        ApiClient(commonArgs.url).use { apiClient ->
+            val result = sendRequest {
+                apiClient.repeatExperiment(id, invocations)
             }
             result.onSuccess { experiment ->
                 println("Experiment $id repeated with id: $experiment")
             }
-        } finally {
-            apiClient.close()
         }
     }
 }
@@ -164,19 +143,15 @@ class GetUniqueExperimentsCommand : CliktCommand("unique-experiments") {
     private val commonArgs by requireObject<CommonArgs>()
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
-
-        try {
-            val result = sendRequest(apiClient) { client ->
-                client.getUniqueExperiments()
+        ApiClient(commonArgs.url).use { apiClient ->
+            val result = sendRequest {
+                apiClient.getUniqueExperiments()
             }
             result.onSuccess { experiments ->
                 experiments.forEach {
                     println(it.prettyRepr())
                 }
             }
-        } finally {
-            apiClient.close()
         }
     }
 }
@@ -197,13 +172,11 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
     private val fileName by option("--file-name", "-f", help = "Name of the output file")
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
-
-        try {
+        ApiClient(commonArgs.url).use { apiClient ->
             when (output) {
                 OutputType.TERMINAL -> {
-                    val result = sendRequest(apiClient) { client ->
-                        client.getAggregatedExperimentsResults(experimentIds, fromDate, toDate)
+                    val result = sendRequest {
+                        apiClient.getAggregatedExperimentsResults(experimentIds, fromDate, toDate)
                     }
                     result.onSuccess { results ->
                         printFormattedAggregatedResults(results)
@@ -211,8 +184,8 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
                 }
 
                 OutputType.CSV -> {
-                    val result = sendRequest(apiClient) { client ->
-                        client.getAggregatedExperimentsResultsCSV(experimentIds, fromDate, toDate)
+                    val result = sendRequest {
+                        apiClient.getAggregatedExperimentsResultsCSV(experimentIds, fromDate, toDate)
                     }
                     result.onSuccess { csvContent ->
                         saveToFile(fileName, csvContent)
@@ -220,17 +193,16 @@ class GetAggregatedExperimentsResultsCommand : CliktCommand("aggregated-experime
                 }
 
                 OutputType.PLOT -> {
-                    val result = sendRequest(apiClient) { client ->
-                        client.getAggregatedExperimentsResultsPlot(experimentIds, fromDate, toDate)
+                    val result = sendRequest {
+                        apiClient.getAggregatedExperimentsResultsPlot(experimentIds, fromDate, toDate)
                     }
                     result.onSuccess { plot ->
                         saveResponseBodyToFile(fileName, plot)
                     }
                 }
             }
-        } finally {
-            apiClient.close()
         }
+
     }
 }
 
@@ -256,7 +228,6 @@ class UpdateGroupNameCommand : CliktCommand("group-name-update") {
     }
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
         val filter = ExperimentFilter(
             experimentIds = experimentIds,
             algorithmName = algorithmName,
@@ -268,17 +239,15 @@ class UpdateGroupNameCommand : CliktCommand("group-name-update") {
             toDate = toDate
         )
 
-        try {
-            val result = sendRequest(apiClient) { client ->
-                client.updateGroupName(filter, groupName)
+        ApiClient(commonArgs.url).use { apiClient ->
+            val result = sendRequest {
+                apiClient.updateGroupName(filter, groupName)
             }
             result.onSuccess { experiments ->
                 experiments.forEach {
                     println(it.prettyRepr())
                 }
             }
-        } finally {
-            apiClient.close()
         }
     }
 }
@@ -289,17 +258,13 @@ class DeleteExperimentCommand : CliktCommand("experiment-delete") {
     private val id by argument(help = "ID of the experiment to delete").long()
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
-
-        try {
-            val result = sendRequest(apiClient) { client ->
-                client.deleteExperiment(id)
+        ApiClient(commonArgs.url).use { apiClient ->
+            val result = sendRequest {
+                apiClient.deleteExperiment(id)
             }
             result.onSuccess {
                 println("Experiment with ID $id has been successfully deleted.")
             }
-        } finally {
-            apiClient.close()
         }
     }
 }
@@ -310,17 +275,11 @@ class DeleteExperimentsByGroupNameCommand : CliktCommand("group-delete") {
     private val groupName by argument(help = "Name of the group whose experiments will be deleted")
 
     override fun run(): Unit = runBlocking {
-        val apiClient = ApiClient(commonArgs.url)
-
-        try {
-            val result = sendRequest(apiClient) { client ->
-                client.deleteExperimentsByGroupName(groupName)
-            }
+        ApiClient(commonArgs.url).use { apiClient ->
+            val result = sendRequest { apiClient.deleteExperimentsByGroupName(groupName) }
             result.onSuccess {
                 println("Experiments in group '$groupName' have been successfully deleted.")
             }
-        } finally {
-            apiClient.close()
         }
     }
 }

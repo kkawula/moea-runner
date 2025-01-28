@@ -9,7 +9,5 @@ fun main() = runBlocking {
     val apiClient = ApiClient()
     val experimentId = 1L
 
-    apiClient.deleteExperiment(experimentId)
-
-    apiClient.close()
+    apiClient.use { apiClient.deleteExperiment(experimentId) }
 }

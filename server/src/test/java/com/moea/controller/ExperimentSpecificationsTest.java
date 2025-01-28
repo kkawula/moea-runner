@@ -255,7 +255,7 @@ public class ExperimentSpecificationsTest {
 
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withGroupName(groupName));
 
-        //WHEN
+        // WHEN
         List<Experiment> result = experimentRepository.findAll(spec);
 
         // THEN

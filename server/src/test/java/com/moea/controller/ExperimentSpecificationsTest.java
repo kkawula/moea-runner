@@ -6,7 +6,6 @@ import com.moea.model.Experiment;
 import com.moea.repository.ExperimentRepository;
 import com.moea.service.ExperimentService;
 import com.moea.specifications.ExperimentSpecifications;
-import jakarta.transaction.Transactional;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -26,25 +26,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ExperimentSpecificationsTest {
     @Autowired
-    private ExperimentRepository experimentRepository;
-    @Autowired
-    private ExperimentService experimentService;
+    ExperimentService experimentService;
     @Autowired
     private ExperimentSpecifications experimentSpecifications;
     @Autowired
-    private ExperimentController controllerUnderTest;
+    private ExperimentRepository experimentRepository;
+    @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     public void setup() {
-        this.mockMvc = MockMvcBuilders.standaloneSetup(controllerUnderTest).build();
+        experimentRepository.deleteAll();
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
         TestConst.getExperiments().forEach(experiment -> experimentService.createExperiment(experiment));
     }
-
     @Test
     public void testProblemNameSpecification_ExampleProblemName_ExpectedResultArraySizeEquals3() {
         Specification<Experiment> spec = Specification.where(experimentSpecifications.withProblem("ZDT1"));
@@ -57,12 +59,11 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    @Transactional
     public void testProblemNameSpecificationMvc_ExampleProblemName_ExpectedResultArraySizeEquals3() throws Exception {
         mockMvc.perform(get("/experiments")
-                        .param("problemName", "ZDT1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)));
+                .param("problemName", "ZDT1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)));
     }
 
     @Test
@@ -77,7 +78,6 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    @Transactional
     public void testAlgorithmNameSpecificationMvc_ExampleAlgorithmName_ExpectedResultArraySizeEquals1() throws Exception {
         mockMvc.perform(get("/experiments")
                         .param("algorithmName", "NSGAII"))
@@ -97,7 +97,6 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    @Transactional
     public void testMetricNameSpecificationMvc_ExampleMetricName_ExpectedResultArraySizeEquals2() throws Exception {
         mockMvc.perform(get("/experiments")
                         .param("metricName", "Spacing"))
@@ -106,7 +105,6 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    @Transactional
     public void testWithinDateRangeSpecification_ValidDateRange_ExpectedResultArraySizeEquals3() {
         // GIVEN
         LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 0, 30, 0);
@@ -119,6 +117,7 @@ public class ExperimentSpecificationsTest {
             dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
             dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
         }
+        experimentRepository.saveAll(dbExperiments);
 
         Specification<Experiment> spec = Specification.where(
                 experimentSpecifications.withinDateRange(fromDate, toDate));
@@ -131,7 +130,6 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    @Transactional
     public void testWithinDateRangeSpecificationMvc_ValidDateRange_ExpectedResultArraySizeEquals3() throws Exception {
         // GIVEN
         List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
@@ -140,17 +138,17 @@ public class ExperimentSpecificationsTest {
             dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
             dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
         }
+        experimentRepository.saveAll(dbExperiments);
 
         // THEN
         mockMvc.perform(get("/experiments")
                         .param("fromDate", "2025-01-01 00:30:00")
-                        .param("toDate", "2025-01-01 04:30:00"))
-                .andExpect(status().isOk())
+                        .param("toDate", "2025-01-01 06:30:00"))
                 .andExpect(jsonPath("$", hasSize(3)));
+
     }
 
     @Test
-    @Transactional
     public void testSpecificationFromGivenDateToTheRest_ValidFromDate_ExpectedResultArraySizeEquals3() {
         // GIVEN
         LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 3, 30, 0);
@@ -162,6 +160,7 @@ public class ExperimentSpecificationsTest {
             dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
             dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
         }
+        experimentRepository.saveAll(dbExperiments);
 
         Specification<Experiment> spec = Specification.where(
                 experimentSpecifications.withinDateRange(fromDate, null));
@@ -174,7 +173,6 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    @Transactional
     public void testSpecificationFromGivenDateToTheRestMvc_ValidFromDate_ExpectedResultArraySizeEquals3() throws Exception {
         // GIVEN
         List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
@@ -184,6 +182,8 @@ public class ExperimentSpecificationsTest {
             dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
         }
 
+        experimentRepository.saveAll(dbExperiments);
+
         // THEN
         mockMvc.perform(get("/experiments")
                         .param("fromDate", "2025-01-01 03:30:00"))
@@ -192,7 +192,6 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    @Transactional
     public void testSpecificationToGivenDateToTheBeginning_ValidToDate_ExpectedResultArraySizeEquals4() {
         // GIVEN
         LocalDateTime toDate = LocalDateTime.of(2025, 1, 2, 2, 0, 0);
@@ -205,6 +204,8 @@ public class ExperimentSpecificationsTest {
             dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
         }
 
+        experimentRepository.saveAll(dbExperiments);
+
         Specification<Experiment> spec = Specification.where(
                 experimentSpecifications.withinDateRange(null, toDate));
 
@@ -216,7 +217,6 @@ public class ExperimentSpecificationsTest {
     }
 
     @Test
-    @Transactional
     public void testSpecificationToGivenDateToTheBeginningMvc_ValidToDate_ExpectedResultArraySizeEquals4() throws Exception {
         // GIVEN
         List<ExperimentDTO> experimentDTOList = TestConst.getExperiments();
@@ -225,6 +225,7 @@ public class ExperimentSpecificationsTest {
             dbExperiments.get(i).setStartDate(experimentDTOList.get(i).getStartDate());
             dbExperiments.get(i).setEndDate(experimentDTOList.get(i).getEndDate());
         }
+        experimentRepository.saveAll(dbExperiments);
 
         // THEN
         mockMvc.perform(get("/experiments")
@@ -274,5 +275,6 @@ public class ExperimentSpecificationsTest {
         // THEN
         assertEquals(5, result.size());
     }
+
 
 }

@@ -9,7 +9,5 @@ fun main() = runBlocking {
     val apiClient = ApiClient()
     val groupName = "new-group-name"
 
-    apiClient.deleteExperimentsByGroupName(groupName)
-
-    apiClient.close()
+    apiClient.use { apiClient.deleteExperimentsByGroupName(groupName) }
 }

@@ -20,11 +20,9 @@ fun main() = runBlocking {
     )
 
     val apiClient = ApiClient()
-    val experiments = apiClient.updateGroupName(filter, "new-group-name")
+    val experiments = apiClient.use { apiClient.updateGroupName(filter, "new-group-name") }
 
     experiments.forEach {
         println(it.prettyRepr())
     }
-
-    apiClient.close()
 }

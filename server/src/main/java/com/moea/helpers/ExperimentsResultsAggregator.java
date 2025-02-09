@@ -1,4 +1,4 @@
-package com.moea.util;
+package com.moea.helpers;
 
 import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.dto.AggregatedStats;
@@ -93,7 +93,11 @@ public class ExperimentsResultsAggregator {
         return new ExperimentsCommonAttributes(iterations, commonProblems, commonAlgorithms, commonMetrics);
     }
 
-    private <T> List<String> getCommonAttributeList(List<Experiment> experiments, Function<Experiment, List<T>> attributeExtractor, Function<T, String> attributeNameExtractor) {
+    private <T> List<String> getCommonAttributeList(
+            List<Experiment> experiments,
+            Function<Experiment, List<T>> attributeExtractor,
+            Function<T, String> attributeNameExtractor)
+    {
         return experiments.stream()
                 .map(attributeExtractor)
                 .map(attributes -> attributes.stream().map(attributeNameExtractor).collect(Collectors.toSet()))

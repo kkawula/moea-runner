@@ -8,11 +8,9 @@ fun main() = runBlocking {
     println("Getting unique experiments...")
 
     val apiClient = ApiClient()
-    val uniqueExperiments = apiClient.getUniqueExperiments()
+    val uniqueExperiments = apiClient.use { apiClient.getUniqueExperiments() }
 
     uniqueExperiments.forEach {
         println(it.prettyRepr())
     }
-
-    apiClient.close()
 }

@@ -2,11 +2,12 @@ package com.moea.repository;
 
 import com.moea.TestConst;
 import com.moea.model.Experiment;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -19,25 +20,30 @@ class ExperimentRepositoryTest {
     @Autowired
     private ExperimentRepository experimentRepository;
 
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
     @Test
-    @Transactional
     void testDeleteByGroupName() {
-        // Given
-        String groupName1 = "testGroup1";
-        String groupName2 = "testGroup2";
-        List<Experiment> experiments = TestConst.getAggregatedExperiments();
-        experiments.getFirst().setGroupName(groupName1);
-        experiments.get(1).setGroupName(groupName2);
-        experiments.get(2).setGroupName(groupName2);
-        experimentRepository.saveAll(experiments);
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
 
-        // When
-        experimentRepository.deleteByGroupName("testGroup2");
+        transactionTemplate.executeWithoutResult(status -> {
+            // Given
+            String groupName1 = "testGroup1";
+            String groupName2 = "testGroup2";
+            List<Experiment> experiments = TestConst.getAggregatedExperiments();
+            experiments.get(0).setGroupName(groupName1);
+            experiments.get(1).setGroupName(groupName2);
+            experiments.get(2).setGroupName(groupName2);
+            experimentRepository.saveAll(experiments);
 
-        // Then
-        List<Experiment> remainingExperiments = experimentRepository.findAll();
-        assertEquals(1, remainingExperiments.size());
-        assertEquals("testGroup1", remainingExperiments.getFirst().getGroupName());
+            // When
+            experimentRepository.deleteByGroupName("testGroup2");
+
+            // Then
+            List<Experiment> remainingExperiments = experimentRepository.findAll();
+            assertEquals(1, remainingExperiments.size());
+            assertEquals("testGroup1", remainingExperiments.getFirst().getGroupName());
+        });
     }
-
 }

@@ -1,4 +1,4 @@
-package com.moea.util;
+package com.moea.helpers;
 
 import com.moea.dto.ExperimentDTO;
 import org.moeaframework.core.indicator.StandardIndicator;

@@ -1,17 +1,16 @@
 package com.moea.service;
 
 import com.moea.ExperimentStatus;
-import com.moea.converters.CSVUtil;
 import com.moea.dto.AggregatedExperimentResultDTO;
 import com.moea.exceptions.ExperimentNotFoundException;
+import com.moea.helpers.ExperimentsResultsAggregator;
 import com.moea.model.Experiment;
 import com.moea.model.ExperimentResult;
 import com.moea.repository.ExperimentRepository;
 import com.moea.repository.ExperimentResultsRepository;
 import com.moea.specifications.ExperimentSpecifications;
-import com.moea.util.ExperimentsResultsAggregator;
+import com.moea.utils.CSVUtil;
 import org.jfree.chart.JFreeChart;
-import org.moeaframework.analysis.plot.Plot;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,17 +18,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import static com.moea.service.ExperimentService.convertStringToDate;
-import static com.moea.util.ChartComposer.createCombinedChart;
+import static com.moea.utils.ChartUtil.buildCharts;
+import static com.moea.utils.ChartUtil.createCombinedChartImage;
 
 @Component
 public class AggregatedExperimentResultsProcessor {
@@ -96,97 +91,6 @@ public class AggregatedExperimentResultsProcessor {
         byte[] imageBytes = createCombinedChartImage(charts);
 
         return createImageResponse(imageBytes);
-    }
-
-    private List<JFreeChart> buildCharts(List<AggregatedExperimentResultDTO> aggregatedExperiments) {
-        List<JFreeChart> charts = new ArrayList<>();
-        List<String> problems = aggregatedExperiments.stream()
-                .map(AggregatedExperimentResultDTO::getProblem)
-                .distinct()
-                .toList();
-
-        for (String problem : problems) {
-            List<AggregatedExperimentResultDTO> filteredExperiments = aggregatedExperiments.stream()
-                    .filter(res -> res.getProblem().equals(problem))
-                    .toList();
-
-            List<String> metrics = filteredExperiments.stream()
-                    .map(AggregatedExperimentResultDTO::getMetric)
-                    .distinct()
-                    .toList();
-
-            for (String metric : metrics) {
-                List<AggregatedExperimentResultDTO> filteredByMetric = filteredExperiments.stream()
-                        .filter(res -> res.getMetric().equals(metric))
-                        .toList();
-
-                Map<String, List<AggregatedExperimentResultDTO>> resultsByAlgorithm = filteredByMetric.stream()
-                        .collect(Collectors.groupingBy(AggregatedExperimentResultDTO::getAlgorithm));
-
-                JFreeChart chart = createChartForMetric(resultsByAlgorithm, problem, metric);
-                charts.add(chart);
-            }
-        }
-        return charts;
-    }
-
-    private JFreeChart createChartForMetric(
-            Map<String, List<AggregatedExperimentResultDTO>> resultsByAlgorithm,
-            String problem,
-            String metric
-    ) {
-        Map<String, double[]> xSeries = new HashMap<>();
-        Map<String, double[]> ySeries = new HashMap<>();
-
-        resultsByAlgorithm.forEach((algorithm, data) -> {
-            data.sort(Comparator.comparingInt(AggregatedExperimentResultDTO::getIteration));
-            double[] x = data.stream()
-                    .mapToDouble(AggregatedExperimentResultDTO::getIteration)
-                    .toArray();
-            double[] y = data.stream()
-                    .mapToDouble(res -> res.getResult().getMean())
-                    .toArray();
-            xSeries.put(algorithm, x);
-            ySeries.put(algorithm, y);
-        });
-
-        return buildChart(xSeries, ySeries, problem, metric);
-    }
-
-    private JFreeChart buildChart(
-            Map<String, double[]> xSeries,
-            Map<String, double[]> ySeries,
-            String problem,
-            String metric
-    ) {
-        Plot plot = new Plot();
-        int index = 0;
-        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA};
-
-        for (String algorithm : xSeries.keySet()) {
-            double[] x = xSeries.get(algorithm);
-            double[] y = ySeries.get(algorithm);
-
-            plot.line(algorithm, x, y)
-                    .withPaint(colors[index % colors.length]);
-            index++;
-        }
-
-        plot.setXLabel("Iterations")
-                .setYLabel("Mean Value")
-                .setTitle("Problem: " + problem + " - Metric: " + metric);
-
-        return plot.getChart();
-    }
-
-    private byte[] createCombinedChartImage(List<JFreeChart> charts) {
-        BufferedImage image = createCombinedChart(charts);
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            ImageIO.write(image, "png", bos);
-            return bos.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException("Error creating chart image", e);
-        }
     }
 
     private ResponseEntity<byte[]> createImageResponse(byte[] imageBytes) {

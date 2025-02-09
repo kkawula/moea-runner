@@ -1,4 +1,4 @@
-package com.moea.util;
+package com.moea.utils;
 
 import org.jfree.chart.JFreeChart;
 
